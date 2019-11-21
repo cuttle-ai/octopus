@@ -23,6 +23,8 @@ type TableNode struct {
 	Name string
 	//Children are the children node of the table node
 	Children []ColumnNode
+	//Resolved indicates that the node is resolved
+	Resolved bool
 }
 
 //ID returns the unique id of the node
@@ -61,6 +63,6 @@ func (t *TableNode) Decode(enc []byte) bool {
 }
 
 //Resolve will try resolve the node with the given tokens
-func (t *TableNode) Resolve(tokens []Token) bool {
+func (t *TableNode) Resolve(tokens []FastToken, pos int) bool {
 	return false
 }

@@ -18,10 +18,14 @@ import "strings"
  */
 
 //Tokenize will tokenize a given sentence according to the tokenizer of the given id
-func Tokenize(id string, sentence []rune) ([]Token, error) {
+func Tokenize(id string, sentence []rune) ([]FastToken, error) {
 	/*
 	 * We will make a request to the tokenizer to get the sentence tokenized
+	 * Then we will build the unknowns
+	 * Then we will adjust the postions
+	 * Then we will do a fast token for all the tokens and return the same
 	 */
+	//requesting the tokenizer to tokenize the given sentence
 	req := Request{
 		ID:       id,
 		Type:     TokenizerGet,
@@ -33,7 +37,19 @@ func Tokenize(id string, sentence []rune) ([]Token, error) {
 	if !res.Valid {
 		return nil, errors.New("couldn't tokenize the given sentence for the id " + id)
 	}
-	return res.Matches, nil
+
+	//building the unknowns
+	res.Matches = BuildUnknowns(sentence, res.Matches)
+
+	//adjusting the positions of the tokens according to the position in the token list
+	res.Matches = AdjustPositions(res.Matches)
+
+	//fast tokenizing the tokens
+	result := []FastToken{}
+	for _, v := range res.Matches {
+		result = append(result, v.FastToken())
+	}
+	return result, nil
 }
 
 //RequestType is the type of the request for the tokenizer
@@ -134,4 +150,84 @@ func Cache(in chan Request) {
 			delete(dict, req.ID)
 		}
 	}
+}
+
+//BuildUnknowns build unknown nodes.
+//It return the tokens with unidentified words in the sentence transfomed to tokens with unknowns
+func BuildUnknowns(sentence []rune, toks []Token) []Token {
+	/*
+	 * We will iterate through the sentence
+	 * Till the positions of each token is reached we will itearte through the sentence and build each word
+	 * Upon reaching a position, it will add the word to the words list
+	 * Once all the unknown words are recorded, we will split each word based on space
+	 * The resultant words are consolidated as tokens
+	 */
+	result := []Token{}
+	words := [][]rune{}
+	tok := 0
+	word := []rune{}
+	tokenMap := map[string]Token{}
+
+	//iterating through the sentence
+	for p := 0; p < len(sentence); p++ {
+
+		//checking whether the rune is outside the token
+		if (len(toks) > tok && p < toks[tok].Pos) || len(toks) <= tok {
+			word = append(word, sentence[p])
+		} else if len(toks) > tok && toks[tok].Pos == p {
+
+			//need to append only if there exist a word
+			if len(word) > 0 {
+				words = append(words, word)
+				word = []rune{}
+			}
+			tokenMap[string(toks[tok].Word)] = toks[tok]
+			words = append(words, toks[tok].Word)
+			p = toks[tok].Pos + len(toks[tok].Word)
+			tok++
+		}
+	}
+
+	//if any pending word, copy it to the words list
+	if len(word) > 0 {
+		words = append(words, word)
+	}
+
+	//split the words with space
+	for _, w := range words {
+		ws := strings.Split(string(w), " ")
+		for i, wr := range ws {
+			//no need to take empty strings
+			if len(wr) == 0 {
+				continue
+			}
+			tok := Token{
+				Word: []rune(wr),
+			}
+			oTok, ok := tokenMap[wr]
+			if ok {
+				tok.Nodes = oTok.Nodes
+			} else {
+				tok.Nodes = []Node{&UnknownNode{UID: fmt.Sprint("U", i), Word: []rune(wr)}}
+			}
+			result = append(result, tok)
+		}
+	}
+
+	return result
+}
+
+//AdjustPositions will adjust the positions of the tokens corresponding to the
+//position of the token in the token list rather than the sentence
+func AdjustPositions(toks []Token) []Token {
+	/*
+	 * We will iterate through the tokens and put the position as the index of the token
+	 */
+	result := []Token{}
+
+	for k, tok := range toks {
+		result = append(result, Token{Pos: k, Word: tok.Word, Nodes: tok.Nodes})
+	}
+
+	return result
 }

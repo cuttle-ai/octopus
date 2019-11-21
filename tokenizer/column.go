@@ -23,6 +23,8 @@ type ColumnNode struct {
 	Name string
 	//Children are the children node of the column node
 	Children []ValueNode
+	//Resolved indicates that the node is resolved
+	Resolved bool
 }
 
 //ID returns the unique id of the node
@@ -61,6 +63,6 @@ func (c *ColumnNode) Decode(enc []byte) bool {
 }
 
 //Resolve will try resolve the node with the given tokens
-func (c *ColumnNode) Resolve(tokens []Token) bool {
+func (c *ColumnNode) Resolve(tokens []FastToken, pos int) bool {
 	return false
 }

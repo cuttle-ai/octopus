@@ -5,7 +5,7 @@
 package tokenizer
 
 /*
- * This file contains the defntion of node interface
+ * This file contains the defnition of node interface
  */
 
 //Type is type of node
@@ -20,8 +20,8 @@ const (
 	Column Type = 3
 	//Value is the value that is present in the table's specific column
 	Value Type = 4
-	//Operation is the operation to be applied when doing a filter
-	Operation Type = 5
+	//Operator is the operation to be applied when doing a filter
+	Operator Type = 5
 	//GroupBy is the based on which the values of columns should be grouped
 	GroupBy Type = 6
 	//AggregationFn is the aggregation function to be used for a column in a query
@@ -50,6 +50,6 @@ type Node interface {
 	Encode() []byte
 	//Decode will decode a binary string to a node. Returns true if sucessfully decoded
 	Decode([]byte) bool
-	//Resolve returns true if the node is resolved
-	Resolve([]Token) bool
+	//Resolve returns true if the node is resolved. It requires the token list and the position of the node in the token list
+	Resolve([]FastToken, int) bool
 }

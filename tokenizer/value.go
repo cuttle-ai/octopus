@@ -21,6 +21,8 @@ type ValueNode struct {
 	PUID string
 	//Name is the name of the node
 	Name string
+	//Resolved indicates that the node is resolved
+	Resolved bool
 }
 
 //ID returns the unique id of the node
@@ -28,9 +30,9 @@ func (v *ValueNode) ID() string {
 	return v.UID
 }
 
-//Type returns Column Type
+//Type returns Value Type
 func (v *ValueNode) Type() Type {
-	return Column
+	return Value
 }
 
 //TokenWord returns the word property of the node
@@ -59,6 +61,6 @@ func (v *ValueNode) Decode(enc []byte) bool {
 }
 
 //Resolve will try resolve the node with the given tokens
-func (v *ValueNode) Resolve(tokens []Token) bool {
+func (v *ValueNode) Resolve(tokens []FastToken, pos int) bool {
 	return false
 }
