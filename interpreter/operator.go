@@ -2,7 +2,7 @@
 // Use of this source code is governed by a Melvin Davis<hi@melvindavis.me>
 // license that can be found in the LICENSE file.
 
-package tokenizer
+package interpreter
 
 /*
  * This file contains the defnition of operator type node
@@ -21,6 +21,23 @@ type OperatorNode struct {
 	PN Node
 	//Resolved indicates that the node is resolved
 	Resolved bool
+	//Column is the column with which the operator is applied
+	Column ColumnNode
+	//Unknown is the value to be applied to the column node with the operator
+	Unknown UnknownNode
+	//Value is the value to be applied to the column node with the operator
+	Value ValueNode
+}
+
+//Copy will return a copy of the node
+func (o *OperatorNode) Copy() Node {
+	return &OperatorNode{
+		UID:      o.UID,
+		Word:     o.Word,
+		PN:       o.PN,
+		PUID:     o.PUID,
+		Resolved: o.Resolved,
+	}
 }
 
 //ID returns the unique id of the node
@@ -58,42 +75,13 @@ func (o *OperatorNode) Decode(enc []byte) bool {
 	return false
 }
 
-//Resolve will try resolve the node with the given tokens
-func (o *OperatorNode) Resolve(tokens []FastToken, pos int) bool {
-	/*
-	 * 1. If there exists a value node after the operator.
-	 * 2. If there exists a column node before the operator node and
-	 *    there exists a unknow node after the operator node.
-	 */
-	//if already resolved, we return
-	if o.Resolved {
-		return true
-	}
+//IsResolved will return true if the node is resolved
+func (o *OperatorNode) IsResolved() bool {
+	return o.Resolved
+}
 
-	//check if the position is 0 or end of the tokens. then we can't go forward
-	if pos == 0 || len(tokens)-1 == pos {
-		o.Resolved = false
-		return false
-	}
 
-	//checking if there exists a value node after the operator node
-	var valueNodeC = len(tokens[pos+1].Values) > 0
-	if valueNodeC {
-		o.Resolved = true
-		tokens[pos+1].Values[0].Resolved = true
-		return true
-	}
-
-	//get the token before the operator and try to find if there exists a column node in that
-	var columnC = len(tokens[pos-1].Columns) == 0 || tokens[pos-1].Columns[0].Resolved
-	var unknownC = len(tokens[pos+1].Unknowns) == 0 || tokens[pos+1].Unknowns[0].Resolved
-	if columnC || unknownC {
-		o.Resolved = false
-		return false
-	}
-
-	o.Resolved = true
-	tokens[pos-1].Columns[0].Resolved = true
-	tokens[pos+1].Unknowns[0].Resolved = true
-	return false
+//SetResolved will set the resolved state of the node
+func (o *OperatorNode) SetResolved(state bool) {
+	o.Resolved = state
 }

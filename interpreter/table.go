@@ -2,7 +2,7 @@
 // Use of this source code is governed by a Melvin Davis<hi@melvindavis.me>
 // license that can be found in the LICENSE file.
 
-package tokenizer
+package interpreter
 
 /*
  * This file contains the defnition of table type node
@@ -25,6 +25,19 @@ type TableNode struct {
 	Children []ColumnNode
 	//Resolved indicates that the node is resolved
 	Resolved bool
+}
+
+//Copy will return a copy of the node
+func (t *TableNode) Copy() Node {
+	return &TableNode{
+		UID:      t.UID,
+		Word:     t.Word,
+		PN:       t.PN,
+		PUID:     t.PUID,
+		Name:     t.Name,
+		Children: t.Children,
+		Resolved: t.Resolved,
+	}
 }
 
 //ID returns the unique id of the node
@@ -62,7 +75,12 @@ func (t *TableNode) Decode(enc []byte) bool {
 	return false
 }
 
-//Resolve will try resolve the node with the given tokens
-func (t *TableNode) Resolve(tokens []FastToken, pos int) bool {
-	return false
+//IsResolved will return true if the node is resolved
+func (t *TableNode) IsResolved() bool {
+	return t.Resolved
+}
+
+//SetResolved will set the resolved state of the node
+func (t *TableNode) SetResolved(state bool) {
+	t.Resolved = state
 }

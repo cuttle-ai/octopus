@@ -2,18 +2,19 @@
 // Use of this source code is governed by a Melvin Davis<hi@melvindavis.me>
 // license that can be found in the LICENSE file.
 
-package tokenizer
+package interpreter
 
 import (
+	"fmt"
 	"testing"
 	"time"
 )
 
 /*
- * This file contains the tests and test utilities for tokenizer
+ * This file contains the tests and test utilities for interpreter
  */
 
-func TestTokenize(t *testing.T) {
+func TestInterpret(t *testing.T) {
 	loadTestDICT()
 	time.Sleep(time.Second)
 	toks, err := Tokenize(testUser, []rune("show me the brands of with Swift cars"))
@@ -23,4 +24,8 @@ func TestTokenize(t *testing.T) {
 	if len(toks) == 0 {
 		t.Error("Expected to have more than 1 tokens found. Go none")
 	}
+
+	qu, err := Interpret(toks)
+
+	fmt.Println(qu)
 }

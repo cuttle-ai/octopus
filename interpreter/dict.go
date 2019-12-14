@@ -2,7 +2,7 @@
 // Use of this source code is governed by a Melvin Davis<hi@melvindavis.me>
 // license that can be found in the LICENSE file.
 
-package tokenizer
+package interpreter
 
 import "time"
 
@@ -28,6 +28,15 @@ type DICT struct {
 	LastUsed time.Time
 	//Map has tokens mapped to their word
 	Map map[string]Token
+}
+
+//Copy returns the deep copy of the dict
+func (d DICT) Copy() DICT {
+	res := DICT{LastUsed: d.LastUsed, Map: map[string]Token{}}
+	for k, v := range d.Map {
+		res.Map[k] = v.Copy()
+	}
+	return res
 }
 
 //DICTRequest can be used to make a request to dictionary cache
@@ -83,6 +92,8 @@ func Dictionary(in chan DICTRequest) {
 			break
 		case DICTGet:
 			req.DICT, req.Valid = dict[req.ID]
+			//we will only give the copies of the dict item to avoid mutation
+			req.DICT = req.DICT.Copy()
 			req.DICT.LastUsed = time.Now()
 			dict[req.ID] = req.DICT
 			go SendDICTToChannel(req.Out, req)

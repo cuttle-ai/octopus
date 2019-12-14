@@ -2,16 +2,15 @@
 // Use of this source code is governed by a Melvin Davis<hi@melvindavis.me>
 // license that can be found in the LICENSE file.
 
-//Package tokenizer has the functions and structs required for finding the token matches in a sentence
-package tokenizer
+package interpreter
 
-import "fmt"
+import (
+	"errors"
+	"fmt"
+	"strings"
 
-import goahocorasick "github.com/anknown/ahocorasick"
-
-import "errors"
-
-import "strings"
+	goahocorasick "github.com/anknown/ahocorasick"
+)
 
 /*
  * This file contains the utilities for tokenizing a sentence.

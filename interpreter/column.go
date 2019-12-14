@@ -2,7 +2,7 @@
 // Use of this source code is governed by a Melvin Davis<hi@melvindavis.me>
 // license that can be found in the LICENSE file.
 
-package tokenizer
+package interpreter
 
 /*
  * This file contains the defnition of column type node
@@ -25,6 +25,19 @@ type ColumnNode struct {
 	Children []ValueNode
 	//Resolved indicates that the node is resolved
 	Resolved bool
+}
+
+//Copy will return a copy of the node
+func (c *ColumnNode) Copy() Node {
+	return &ColumnNode{
+		UID:      c.UID,
+		Word:     c.Word,
+		PN:       c.PN,
+		PUID:     c.PUID,
+		Name:     c.Name,
+		Children: c.Children,
+		Resolved: c.Resolved,
+	}
 }
 
 //ID returns the unique id of the node
@@ -62,7 +75,12 @@ func (c *ColumnNode) Decode(enc []byte) bool {
 	return false
 }
 
-//Resolve will try resolve the node with the given tokens
-func (c *ColumnNode) Resolve(tokens []FastToken, pos int) bool {
-	return false
+//IsResolved will return true if the node is resolved
+func (c *ColumnNode) IsResolved() bool {
+	return c.Resolved
+}
+
+//SetResolved will set the resolved state of the node
+func (c *ColumnNode) SetResolved(state bool) {
+	c.Resolved = state
 }

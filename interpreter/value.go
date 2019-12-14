@@ -2,7 +2,7 @@
 // Use of this source code is governed by a Melvin Davis<hi@melvindavis.me>
 // license that can be found in the LICENSE file.
 
-package tokenizer
+package interpreter
 
 /*
  * This file contains the defnition value type node
@@ -23,6 +23,18 @@ type ValueNode struct {
 	Name string
 	//Resolved indicates that the node is resolved
 	Resolved bool
+}
+
+//Copy will return a copy of the node
+func (v *ValueNode) Copy() Node {
+	return &ValueNode{
+		UID:      v.UID,
+		Word:     v.Word,
+		PN:       v.PN,
+		PUID:     v.PUID,
+		Name:     v.Name,
+		Resolved: v.Resolved,
+	}
 }
 
 //ID returns the unique id of the node
@@ -60,7 +72,12 @@ func (v *ValueNode) Decode(enc []byte) bool {
 	return false
 }
 
-//Resolve will try resolve the node with the given tokens
-func (v *ValueNode) Resolve(tokens []FastToken, pos int) bool {
-	return false
+//IsResolved will return true if the node is resolved
+func (v *ValueNode) IsResolved() bool {
+	return v.Resolved
+}
+
+//SetResolved will set the resolved state of the node
+func (v *ValueNode) SetResolved(state bool) {
+	v.Resolved = state
 }

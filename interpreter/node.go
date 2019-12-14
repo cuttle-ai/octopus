@@ -2,14 +2,14 @@
 // Use of this source code is governed by a Melvin Davis<hi@melvindavis.me>
 // license that can be found in the LICENSE file.
 
-package tokenizer
+package interpreter
 
 /*
  * This file contains the defnition of node interface
  */
 
 //Type is type of node
-type Type uint
+type Type int
 
 const (
 	//KnowledgeBase is the collection of diffent tables etcs
@@ -50,6 +50,10 @@ type Node interface {
 	Encode() []byte
 	//Decode will decode a binary string to a node. Returns true if sucessfully decoded
 	Decode([]byte) bool
-	//Resolve returns true if the node is resolved. It requires the token list and the position of the node in the token list
-	Resolve([]FastToken, int) bool
+	//IsResolved returns true if the node is resolved.
+	IsResolved() bool
+	//SetResolved will set the resolved state of the node
+	SetResolved(bool)
+	//Copy will make the copy of the node
+	Copy() Node
 }

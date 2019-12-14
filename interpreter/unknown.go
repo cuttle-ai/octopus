@@ -2,7 +2,7 @@
 // Use of this source code is governed by a Melvin Davis<hi@melvindavis.me>
 // license that can be found in the LICENSE file.
 
-package tokenizer
+package interpreter
 
 /*
  * This file contains the defnition of unknown type node
@@ -22,6 +22,17 @@ type UnknownNode struct {
 	PN Node
 	//Resolved indicates that the node is resolved
 	Resolved bool
+}
+
+//Copy will return a copy of the node
+func (u *UnknownNode) Copy() Node {
+	return &UnknownNode{
+		UID:      u.UID,
+		Word:     u.Word,
+		PN:       u.PN,
+		PUID:     u.PUID,
+		Resolved: u.Resolved,
+	}
 }
 
 //ID returns the unique id of the node
@@ -59,7 +70,12 @@ func (u *UnknownNode) Decode(enc []byte) bool {
 	return false
 }
 
-//Resolve will try resolve the node with the given tokens
-func (u *UnknownNode) Resolve(tokens []FastToken, pos int) bool {
-	return false
+//IsResolved will return true if the node is resolved
+func (u *UnknownNode) IsResolved() bool {
+	return u.Resolved
+}
+
+//SetResolved will set the resolved state of the node
+func (u *UnknownNode) SetResolved(state bool) {
+	u.Resolved = state
 }

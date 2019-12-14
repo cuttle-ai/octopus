@@ -2,7 +2,7 @@
 // Use of this source code is governed by a Melvin Davis<hi@melvindavis.me>
 // license that can be found in the LICENSE file.
 
-package tokenizer
+package interpreter
 
 import "strconv"
 
@@ -89,6 +89,15 @@ func (t Token) FastToken() FastToken {
 	}
 
 	return result
+}
+
+//Copy makes a deep copy of the token
+func (t Token) Copy() Token {
+	res := Token{Pos: t.Pos, Word: t.Word, Nodes: []Node{}}
+	for _, v := range t.Nodes {
+		res.Nodes = append(res.Nodes, v.Copy())
+	}
+	return res
 }
 
 //String is the stringer implementation of the fast token
