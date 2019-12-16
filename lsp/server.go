@@ -15,6 +15,7 @@ import (
 	"github.com/cuttle-ai/octopus/lsp/log"
 	"github.com/cuttle-ai/octopus/lsp/routes"
 
+	_ "github.com/cuttle-ai/octopus/lsp/routes/dict"
 	_ "github.com/cuttle-ai/octopus/lsp/routes/interpreter"
 	_ "github.com/cuttle-ai/octopus/lsp/routes/rules"
 )

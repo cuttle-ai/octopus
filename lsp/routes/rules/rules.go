@@ -9,7 +9,6 @@ import (
 	"context"
 	"encoding/json"
 	"net/http"
-	"strings"
 
 	"github.com/cuttle-ai/octopus/interpreter"
 	"github.com/cuttle-ai/octopus/lsp/routes"
@@ -45,9 +44,8 @@ func GetRules(ctx context.Context, w http.ResponseWriter, r *http.Request) {
 
 //SetRuleDisableState will set the disable state of a rule at the given position and group position
 func SetRuleDisableState(ctx context.Context, w http.ResponseWriter, r *http.Request) {
-	params := r.FormValue("params")
 	rq := &RuleDisableStateDO{}
-	dec := json.NewDecoder(strings.NewReader(params))
+	dec := json.NewDecoder(r.Body)
 	err := dec.Decode(rq)
 	if err != nil {
 		//error while decoding the request param

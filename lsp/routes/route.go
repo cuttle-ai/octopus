@@ -62,17 +62,6 @@ func (r Route) ServeHTTP(res http.ResponseWriter, req *http.Request) {
 	//getting the context
 	ctx := req.Context()
 
-	//parsing the form
-	err := req.ParseForm()
-	if err != nil {
-		//error while parsing the form
-		log.Error("Error while parsing the request form", err)
-		response.WriteError(res, response.Error{Err: "Couldn't parse the request form"}, http.StatusUnprocessableEntity)
-		_, cancel := context.WithCancel(ctx)
-		cancel()
-		return
-	}
-
 	//fetching the app context
 	appCtxReq := AppContextRequest{
 		Type: Get,
