@@ -12,8 +12,9 @@ import "github.com/cuttle-ai/octopus/interpreter"
 
 //SelectColumn will mark all the fields in the query as select columns
 var SelectColumn = interpreter.Rule{
-	Name:     "Select Columns",
-	Template: []interpreter.Type{interpreter.Column},
+	Name:        "Select Columns",
+	Description: "This rule will mark all the remaining columns in the query as columns to be selected in a SQL query",
+	Template:    []interpreter.Type{interpreter.Column},
 	Resolve: func(qu interpreter.Query, toks []interpreter.FastToken, index int) (interpreter.Query, error) {
 		/*
 		 * If the column in the given index is not resolved we will add it to the query as select column and mark it as resolved

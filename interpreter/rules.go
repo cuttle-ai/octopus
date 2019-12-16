@@ -23,7 +23,7 @@ type Rule struct {
 	//Query argument is the query to which the resolved tokens has to be attached
 	//The int argument gives the index of the fasttokoen we are referring to
 	//Resolve function should not mutate the state of the rule
-	Resolve func(Query, []FastToken, int) (Query, error)
+	Resolve func(Query, []FastToken, int) (Query, error) `json:"-"`
 	//Matches are the indices of the tokens in the list of tokens to which the rule template has found match
 	Matches []int
 	//Pattern is the kmp buildup of the pattern
