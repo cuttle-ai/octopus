@@ -13,6 +13,10 @@ package interpreter
 type Rule struct {
 	//Name of the rule for debugging purposes
 	Name string
+	//Description of the rule.
+	Description string
+	//Disabled indicates wether the riules is emnabled
+	Disbled bool
 	//Template is the template of the of the rule
 	Template []Type
 	//Resolve function will try to run the resolution for the rule.
@@ -85,6 +89,10 @@ func MatchRules(tokens []FastToken) []Rule {
 	//trying to find matches for the rules with the token pattern
 	for _, gr := range rules {
 		for _, r := range gr.Rules {
+			//if the disabled skip the rule
+			if r.Disbled {
+				continue
+			}
 			pos := r.Pattern.Matches(tokPattern)
 			if len(pos) > 0 {
 				newRule := Rule{Name: r.Name, Matches: pos, Resolve: r.Resolve}
@@ -94,6 +102,22 @@ func MatchRules(tokens []FastToken) []Rule {
 		}
 	}
 	return result
+}
+
+//SetRuleDisableState will set the disable state of a rule
+func SetRuleDisableState(pos, groupPos int, state bool) {
+	for i := 0; i < len(rules); i++ {
+		for j := 0; j < len(rules[i].Rules); j++ {
+			if i == pos && groupPos == j {
+				rules[i].Rules[j].Disbled = state
+			}
+		}
+	}
+}
+
+//GetRules return the rules used in the interpreter
+func GetRules() []*RuleGroup {
+	return rules
 }
 
 //BuildPattern will build pattern for the given tokens
