@@ -10,6 +10,9 @@ import "encoding/json"
  * This file contains the defnition of operator type node
  */
 
+//EqOperator indicates equal to operator
+const EqOperator = "="
+
 //OperatorNode is the node storing the information about a operator.
 //Filters are set based on this node. It depends upon a column and value/unknown
 type OperatorNode struct {
@@ -29,27 +32,34 @@ type OperatorNode struct {
 	Unknown UnknownNode
 	//Value is the value to be applied to the column node with the operator
 	Value ValueNode
+	//Operation is the operation applied by the node
+	Operation string
 }
 
 type operatorNode struct {
-	UID      string      `json:"uid,omitempty"`
-	Word     string      `json:"word,omitempty"`
-	PUID     string      `json:"puid,omitempty"`
-	Column   ColumnNode  `json:"column,omitempty"`
-	Unknown  UnknownNode `json:"unknown,omitempty"`
-	Value    ValueNode   `json:"value,omitempty"`
-	Resolved bool        `json:"resolved,omitempty"`
-	Type     string      `json:"type,omitempty"`
+	UID       string      `json:"uid,omitempty"`
+	Word      string      `json:"word,omitempty"`
+	PUID      string      `json:"puid,omitempty"`
+	Column    ColumnNode  `json:"column,omitempty"`
+	Unknown   UnknownNode `json:"unknown,omitempty"`
+	Value     ValueNode   `json:"value,omitempty"`
+	Resolved  bool        `json:"resolved,omitempty"`
+	Type      string      `json:"type,omitempty"`
+	Operation string      `json:"operation,omitempty"`
 }
 
 //Copy will return a copy of the node
 func (o *OperatorNode) Copy() Node {
 	return &OperatorNode{
-		UID:      o.UID,
-		Word:     o.Word,
-		PN:       o.PN,
-		PUID:     o.PUID,
-		Resolved: o.Resolved,
+		UID:       o.UID,
+		Word:      o.Word,
+		PN:        o.PN,
+		PUID:      o.PUID,
+		Resolved:  o.Resolved,
+		Column:    o.Column,
+		Value:     o.Value,
+		Unknown:   o.Unknown,
+		Operation: o.Operation,
 	}
 }
 
@@ -81,7 +91,7 @@ func (o *OperatorNode) Parent() Node {
 //MarshalJSON encodes the node into a serializable json
 func (o *OperatorNode) MarshalJSON() ([]byte, error) {
 	return json.Marshal(&operatorNode{
-		o.UID, string(o.Word), o.PUID, o.Column, o.Unknown, o.Value, o.Resolved, "Operator",
+		o.UID, string(o.Word), o.PUID, o.Column, o.Unknown, o.Value, o.Resolved, "Operator", o.Operation,
 	})
 }
 
@@ -99,6 +109,7 @@ func (o *OperatorNode) UnmarshalJSON(data []byte) error {
 	o.Unknown = m.Unknown
 	o.Value = m.Value
 	o.Resolved = m.Resolved
+	o.Operation = m.Operation
 	return nil
 }
 

@@ -21,6 +21,8 @@ var testColumn1 = &interpreter.ColumnNode{UID: "brands", Word: []rune("brand"), 
 
 var testValue = &interpreter.ValueNode{UID: "swift", Word: []rune("Swift"), PN: testColumn, PUID: "cars"}
 
+var testOperator = &interpreter.OperatorNode{UID: "equal-is", Word: []rune("is"), Operation: interpreter.EqOperator}
+
 var testTokens = map[string]interpreter.Token{
 	"cars": interpreter.Token{
 		Word:  []rune("cars"),
@@ -33,6 +35,10 @@ var testTokens = map[string]interpreter.Token{
 	"brands": interpreter.Token{
 		Word:  []rune("brands"),
 		Nodes: []interpreter.Node{testColumn1},
+	},
+	"is": interpreter.Token{
+		Word:  []rune("is"),
+		Nodes: []interpreter.Node{testOperator},
 	},
 }
 

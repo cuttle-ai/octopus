@@ -14,4 +14,6 @@ type Query struct {
 	Select []ColumnNode `json:"select,omitempty"`
 	//GroupBy has the list of columns to be used for group the data
 	GroupBy []ColumnNode `json:"group_by,omitempty"`
+	//Filters has the list of filters applied in the query
+	Filters []OperatorNode `json:"filters,omitempty"`
 }
