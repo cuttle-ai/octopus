@@ -4,6 +4,8 @@
 
 package interpreter
 
+import "encoding/json"
+
 /*
  * This file contains the defnition of unknown type node
  */
@@ -22,6 +24,14 @@ type UnknownNode struct {
 	PN Node
 	//Resolved indicates that the node is resolved
 	Resolved bool
+}
+
+type unknownNode struct {
+	UID      string `json:"uid,omitempty"`
+	Word     string `json:"word,omitempty"`
+	PUID     string `json:"puid,omitempty"`
+	Resolved bool   `json:"resolved,omitempty"`
+	Type     string `json:"type,omitempty"`
 }
 
 //Copy will return a copy of the node
@@ -60,14 +70,25 @@ func (u *UnknownNode) Parent() Node {
 	return u.PN
 }
 
-//Encode encodes the node into a serializable form
-func (u *UnknownNode) Encode() []byte {
-	return nil
+//MarshalJSON encodes the node into a serializable json
+func (u *UnknownNode) MarshalJSON() ([]byte, error) {
+	return json.Marshal(&unknownNode{
+		u.UID, string(u.Word), u.PUID, u.Resolved, "Unknown",
+	})
 }
 
-//Decode decodes the node from the serialized data
-func (u *UnknownNode) Decode(enc []byte) bool {
-	return false
+//UnmarshalJSON decodes the node from a json
+func (u *UnknownNode) UnmarshalJSON(data []byte) error {
+	m := &columnNode{}
+	err := json.Unmarshal(data, m)
+	if err != nil {
+		return err
+	}
+	u.UID = m.UID
+	u.Word = []rune(m.Word)
+	u.PUID = m.PUID
+	u.Resolved = m.Resolved
+	return nil
 }
 
 //IsResolved will return true if the node is resolved

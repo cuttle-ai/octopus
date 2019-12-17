@@ -4,6 +4,8 @@
 
 package interpreter
 
+import "encoding/json"
+
 /*
  * This file contains the defnition of operator type node
  */
@@ -27,6 +29,17 @@ type OperatorNode struct {
 	Unknown UnknownNode
 	//Value is the value to be applied to the column node with the operator
 	Value ValueNode
+}
+
+type operatorNode struct {
+	UID      string      `json:"uid,omitempty"`
+	Word     string      `json:"word,omitempty"`
+	PUID     string      `json:"puid,omitempty"`
+	Column   ColumnNode  `json:"column,omitempty"`
+	Unknown  UnknownNode `json:"unknown,omitempty"`
+	Value    ValueNode   `json:"value,omitempty"`
+	Resolved bool        `json:"resolved,omitempty"`
+	Type     string      `json:"type,omitempty"`
 }
 
 //Copy will return a copy of the node
@@ -65,21 +78,34 @@ func (o *OperatorNode) Parent() Node {
 	return o.PN
 }
 
-//Encode encodes the node into a serializable form
-func (o *OperatorNode) Encode() []byte {
-	return nil
+//MarshalJSON encodes the node into a serializable json
+func (o *OperatorNode) MarshalJSON() ([]byte, error) {
+	return json.Marshal(&operatorNode{
+		o.UID, string(o.Word), o.PUID, o.Column, o.Unknown, o.Value, o.Resolved, "Operator",
+	})
 }
 
-//Decode decodes the node from the serialized data
-func (o *OperatorNode) Decode(enc []byte) bool {
-	return false
+//UnmarshalJSON decodes the node from a json
+func (o *OperatorNode) UnmarshalJSON(data []byte) error {
+	m := &OperatorNode{}
+	err := json.Unmarshal(data, m)
+	if err != nil {
+		return err
+	}
+	o.UID = m.UID
+	o.Word = []rune(m.Word)
+	o.PUID = m.PUID
+	o.Column = m.Column
+	o.Unknown = m.Unknown
+	o.Value = m.Value
+	o.Resolved = m.Resolved
+	return nil
 }
 
 //IsResolved will return true if the node is resolved
 func (o *OperatorNode) IsResolved() bool {
 	return o.Resolved
 }
-
 
 //SetResolved will set the resolved state of the node
 func (o *OperatorNode) SetResolved(state bool) {

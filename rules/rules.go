@@ -16,5 +16,6 @@ const DefaultRulesTag = "DEFAULT_RULES"
 
 //LoadDefaultRules will load the default rules to the interpreter rule engine
 func LoadDefaultRules() {
-	interpreter.AddRule(SelectColumn, 0, 0, DefaultRulesTag)
+	interpreter.AddRule(GroupByColumn, 0, 0, DefaultRulesTag)
+	interpreter.AddRule(SelectColumn, 0, 1, DefaultRulesTag)
 }

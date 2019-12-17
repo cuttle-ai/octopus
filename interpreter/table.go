@@ -4,6 +4,8 @@
 
 package interpreter
 
+import "encoding/json"
+
 /*
  * This file contains the defnition of table type node
  */
@@ -25,6 +27,16 @@ type TableNode struct {
 	Children []ColumnNode
 	//Resolved indicates that the node is resolved
 	Resolved bool
+}
+
+type tableNode struct {
+	UID      string       `json:"uid,omitempty"`
+	Word     string       `json:"word,omitempty"`
+	PUID     string       `json:"puid,omitempty"`
+	Name     string       `json:"name,omitempty"`
+	Children []ColumnNode `json:"children,omitempty"`
+	Resolved bool         `json:"resolved,omitempty"`
+	Type     string       `json:"type,omitempty"`
 }
 
 //Copy will return a copy of the node
@@ -65,14 +77,27 @@ func (t *TableNode) Parent() Node {
 	return t.PN
 }
 
-//Encode encodes the node into a serializable form
-func (t *TableNode) Encode() []byte {
-	return nil
+//MarshalJSON encodes the node into a serializable json
+func (t *TableNode) MarshalJSON() ([]byte, error) {
+	return json.Marshal(&tableNode{
+		t.UID, string(t.Word), t.PUID, t.Name, t.Children, t.Resolved, "Table",
+	})
 }
 
-//Decode decodes the node from the serialized data
-func (t *TableNode) Decode(enc []byte) bool {
-	return false
+//UnmarshalJSON decodes the node from a json
+func (t *TableNode) UnmarshalJSON(data []byte) error {
+	m := &tableNode{}
+	err := json.Unmarshal(data, m)
+	if err != nil {
+		return err
+	}
+	t.UID = m.UID
+	t.Word = []rune(m.Word)
+	t.PUID = m.PUID
+	t.Name = m.Name
+	t.Children = m.Children
+	t.Resolved = m.Resolved
+	return nil
 }
 
 //IsResolved will return true if the node is resolved

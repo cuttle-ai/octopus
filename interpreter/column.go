@@ -4,6 +4,8 @@
 
 package interpreter
 
+import "encoding/json"
+
 /*
  * This file contains the defnition of column type node
  */
@@ -25,18 +27,40 @@ type ColumnNode struct {
 	Children []ValueNode
 	//Resolved indicates that the node is resolved
 	Resolved bool
+	//Dimension indicates that the column can be used as dimension
+	Dimension bool
+	//Measure indicates that the column can be used as measure
+	Measure bool
+	//AggregationFn is preferred aggregation with the column node if used as a measure across a dimension
+	AggregationFn string
+}
+
+type columnNode struct {
+	UID           string      `json:"uid,omitempty"`
+	Word          string      `json:"word,omitempty"`
+	PUID          string      `json:"puid,omitempty"`
+	Name          string      `json:"name,omitempty"`
+	Children      []ValueNode `json:"children,omitempty"`
+	Resolved      bool        `json:"resolved,omitempty"`
+	Type          string      `json:"type,omitempty"`
+	Dimension     bool        `json:"dimension,omitempty"`
+	Measure       bool        `json:"measure,omitempty"`
+	AggregationFn string      `json:"aggregation_fn,omitempty"`
 }
 
 //Copy will return a copy of the node
 func (c *ColumnNode) Copy() Node {
 	return &ColumnNode{
-		UID:      c.UID,
-		Word:     c.Word,
-		PN:       c.PN,
-		PUID:     c.PUID,
-		Name:     c.Name,
-		Children: c.Children,
-		Resolved: c.Resolved,
+		UID:           c.UID,
+		Word:          c.Word,
+		PN:            c.PN,
+		PUID:          c.PUID,
+		Name:          c.Name,
+		Children:      c.Children,
+		Resolved:      c.Resolved,
+		Dimension:     c.Dimension,
+		Measure:       c.Measure,
+		AggregationFn: c.AggregationFn,
 	}
 }
 
@@ -65,14 +89,30 @@ func (c *ColumnNode) Parent() Node {
 	return c.PN
 }
 
-//Encode encodes the node into a serializable form
-func (c *ColumnNode) Encode() []byte {
-	return nil
+//MarshalJSON encodes the node into a serializable json
+func (c *ColumnNode) MarshalJSON() ([]byte, error) {
+	return json.Marshal(&columnNode{
+		c.UID, string(c.Word), c.PUID, c.Name, c.Children, c.Resolved, "Column", c.Dimension, c.Measure, c.AggregationFn,
+	})
 }
 
-//Decode decodes the node from the serialized data
-func (c *ColumnNode) Decode(enc []byte) bool {
-	return false
+//UnmarshalJSON decodes the node from a json
+func (c *ColumnNode) UnmarshalJSON(data []byte) error {
+	m := &columnNode{}
+	err := json.Unmarshal(data, m)
+	if err != nil {
+		return err
+	}
+	c.UID = m.UID
+	c.Word = []rune(m.Word)
+	c.PUID = m.PUID
+	c.Name = m.Name
+	c.Children = m.Children
+	c.Resolved = m.Resolved
+	c.Dimension = m.Dimension
+	c.Measure = m.Measure
+	c.AggregationFn = m.AggregationFn
+	return nil
 }
 
 //IsResolved will return true if the node is resolved

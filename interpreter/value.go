@@ -4,6 +4,8 @@
 
 package interpreter
 
+import "encoding/json"
+
 /*
  * This file contains the defnition value type node
  */
@@ -23,6 +25,15 @@ type ValueNode struct {
 	Name string
 	//Resolved indicates that the node is resolved
 	Resolved bool
+}
+
+type valueNode struct {
+	UID      string `json:"uid,omitempty"`
+	Word     string `json:"word,omitempty"`
+	PUID     string `json:"puid,omitempty"`
+	Name     string `json:"name,omitempty"`
+	Resolved bool   `json:"resolved,omitempty"`
+	Type     string `json:"type,omitempty"`
 }
 
 //Copy will return a copy of the node
@@ -62,14 +73,26 @@ func (v *ValueNode) Parent() Node {
 	return v.PN
 }
 
-//Encode encodes the node into a serializable form
-func (v *ValueNode) Encode() []byte {
-	return nil
+//MarshalJSON encodes the node into a serializable json
+func (v *ValueNode) MarshalJSON() ([]byte, error) {
+	return json.Marshal(&valueNode{
+		v.UID, string(v.Word), v.PUID, v.Name, v.Resolved, "Value",
+	})
 }
 
-//Decode decodes the node from the serialized data
-func (v *ValueNode) Decode(enc []byte) bool {
-	return false
+//UnmarshalJSON decodes the node from a json
+func (v *ValueNode) UnmarshalJSON(data []byte) error {
+	m := &columnNode{}
+	err := json.Unmarshal(data, m)
+	if err != nil {
+		return err
+	}
+	v.UID = m.UID
+	v.Word = []rune(m.Word)
+	v.PUID = m.PUID
+	v.Name = m.Name
+	v.Resolved = m.Resolved
+	return nil
 }
 
 //IsResolved will return true if the node is resolved

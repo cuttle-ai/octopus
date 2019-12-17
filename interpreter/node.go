@@ -46,10 +46,10 @@ type Node interface {
 	PID() string
 	//Parent returns the parent node
 	Parent() Node
-	//Encode will encode a node to binary string which can be stored
-	Encode() []byte
-	//Decode will decode a binary string to a node. Returns true if sucessfully decoded
-	Decode([]byte) bool
+	//MarshalJSON will encode a node to json string which can be stored
+	MarshalJSON() ([]byte, error)
+	//UnmarshalJSON will decode a json string to node
+	UnmarshalJSON([]byte) error
 	//IsResolved returns true if the node is resolved.
 	IsResolved() bool
 	//SetResolved will set the resolved state of the node

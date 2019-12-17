@@ -11,5 +11,7 @@ package interpreter
 //Query has the interpreted query info
 type Query struct {
 	//Select has the list of columns to be selected from the data
-	Select []ColumnNode
+	Select []ColumnNode `json:"select,omitempty"`
+	//GroupBy has the list of columns to be used for group the data
+	GroupBy []ColumnNode `json:"group_by,omitempty"`
 }

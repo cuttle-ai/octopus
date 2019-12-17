@@ -17,7 +17,7 @@ import (
 
 var testColumn = &interpreter.ColumnNode{UID: "cars", Word: []rune("cars")}
 
-var testColumn1 = &interpreter.ColumnNode{UID: "brands", Word: []rune("brand")}
+var testColumn1 = &interpreter.ColumnNode{UID: "brands", Word: []rune("brand"), Dimension: true}
 
 var testValue = &interpreter.ValueNode{UID: "swift", Word: []rune("Swift"), PN: testColumn, PUID: "cars"}
 
