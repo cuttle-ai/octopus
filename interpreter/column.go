@@ -10,6 +10,26 @@ import "encoding/json"
  * This file contains the defnition of column type node
  */
 
+const (
+	//AggregationFnCount for count aggregation funtion
+	AggregationFnCount = "COUNT"
+	//AggregationFnSum for sum aggregation funtion
+	AggregationFnSum = "SUM"
+	//AggregationFnAvg for average aggregation funtion
+	AggregationFnAvg = "AVG"
+)
+
+const (
+	//DataTypeInt denotes integer data type
+	DataTypeInt = "INT"
+	//DataTypeFloat denotes float data type
+	DataTypeFloat = "FLOAT"
+	//DataTypeString denotes string data type
+	DataTypeString = "STRING"
+	//DataTypeDate denotes date data type
+	DataTypeDate = "DATE"
+)
+
 //ColumnNode is the node storing the information about a column.
 //It can be the child of a Table Node and can have value as children
 type ColumnNode struct {
@@ -33,6 +53,8 @@ type ColumnNode struct {
 	Measure bool
 	//AggregationFn is preferred aggregation with the column node if used as a measure across a dimension
 	AggregationFn string
+	//DataType of the column
+	DataType string
 }
 
 type columnNode struct {
@@ -46,6 +68,7 @@ type columnNode struct {
 	Dimension     bool        `json:"dimension,omitempty"`
 	Measure       bool        `json:"measure,omitempty"`
 	AggregationFn string      `json:"aggregation_fn,omitempty"`
+	DataType      string      `json:"data_type,omitempty"`
 }
 
 //Copy will return a copy of the node
@@ -61,6 +84,7 @@ func (c *ColumnNode) Copy() Node {
 		Dimension:     c.Dimension,
 		Measure:       c.Measure,
 		AggregationFn: c.AggregationFn,
+		DataType:      c.DataType,
 	}
 }
 
@@ -92,7 +116,7 @@ func (c *ColumnNode) Parent() Node {
 //MarshalJSON encodes the node into a serializable json
 func (c *ColumnNode) MarshalJSON() ([]byte, error) {
 	return json.Marshal(&columnNode{
-		c.UID, string(c.Word), c.PUID, c.Name, c.Children, c.Resolved, "Column", c.Dimension, c.Measure, c.AggregationFn,
+		c.UID, string(c.Word), c.PUID, c.Name, c.Children, c.Resolved, "Column", c.Dimension, c.Measure, c.AggregationFn, c.DataType,
 	})
 }
 
@@ -112,6 +136,7 @@ func (c *ColumnNode) UnmarshalJSON(data []byte) error {
 	c.Dimension = m.Dimension
 	c.Measure = m.Measure
 	c.AggregationFn = m.AggregationFn
+	c.DataType = m.DataType
 	return nil
 }
 

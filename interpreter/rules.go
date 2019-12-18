@@ -12,30 +12,30 @@ package interpreter
 //Rule represents a rule with template and resolver to resolve the parsed tokens
 type Rule struct {
 	//Name of the rule for debugging purposes
-	Name string
+	Name string `json:"name,omitempty"`
 	//Description of the rule.
-	Description string
+	Description string `json:"description,omitempty"`
 	//Disabled indicates wether the riules is emnabled
-	Disbled bool
+	Disabled bool `json:"disabled,omitempty"`
 	//Template is the template of the of the rule
-	Template []Type
+	Template []Type `json:"template,omitempty"`
 	//Resolve function will try to run the resolution for the rule.
 	//Query argument is the query to which the resolved tokens has to be attached
 	//The int argument gives the index of the fasttokoen we are referring to
 	//Resolve function should not mutate the state of the rule
 	Resolve func(Query, []FastToken, int) (Query, error) `json:"-"`
 	//Matches are the indices of the tokens in the list of tokens to which the rule template has found match
-	Matches []int
+	Matches []int `json:"-"`
 	//Pattern is the kmp buildup of the pattern
-	Pattern *KMP
+	Pattern *KMP `json:"-"`
 }
 
 //RuleGroup stores the list of rules to be executed together with priority
 type RuleGroup struct {
 	//Rules in the group
-	Rules []Rule
+	Rules []Rule `json:"rules,omitempty"`
 	//Tag identifier for the group
-	Tag string
+	Tag string `json:"tag,omitempty"`
 }
 
 var rules = []*RuleGroup{}
@@ -90,7 +90,7 @@ func MatchRules(tokens []FastToken) []Rule {
 	for _, gr := range rules {
 		for _, r := range gr.Rules {
 			//if the disabled skip the rule
-			if r.Disbled {
+			if r.Disabled {
 				continue
 			}
 			pos := r.Pattern.Matches(tokPattern)
@@ -109,7 +109,7 @@ func SetRuleDisableState(pos, groupPos int, state bool) {
 	for i := 0; i < len(rules); i++ {
 		for j := 0; j < len(rules[i].Rules); j++ {
 			if i == pos && groupPos == j {
-				rules[i].Rules[j].Disbled = state
+				rules[i].Rules[j].Disabled = state
 			}
 		}
 	}

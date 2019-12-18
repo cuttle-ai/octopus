@@ -30,8 +30,8 @@ var UnknownFilter = interpreter.Rule{
 		toks[index].Columns[0].SetResolved(true)
 		toks[index+1].Operators[0].SetResolved(true)
 		toks[index+2].Unknowns[0].SetResolved(true)
-		toks[index+1].Operators[0].Column = toks[index].Columns[0]
-		toks[index+1].Operators[0].Unknown = toks[index+2].Unknowns[0]
+		toks[index+1].Operators[0].Column = &toks[index].Columns[0]
+		toks[index+1].Operators[0].Unknown = &toks[index+2].Unknowns[0]
 		if len(qu.Filters) == 0 {
 			qu.Filters = []interpreter.OperatorNode{}
 		}

@@ -27,25 +27,25 @@ type OperatorNode struct {
 	//Resolved indicates that the node is resolved
 	Resolved bool
 	//Column is the column with which the operator is applied
-	Column ColumnNode
+	Column *ColumnNode
 	//Unknown is the value to be applied to the column node with the operator
-	Unknown UnknownNode
+	Unknown *UnknownNode
 	//Value is the value to be applied to the column node with the operator
-	Value ValueNode
+	Value *ValueNode
 	//Operation is the operation applied by the node
 	Operation string
 }
 
 type operatorNode struct {
-	UID       string      `json:"uid,omitempty"`
-	Word      string      `json:"word,omitempty"`
-	PUID      string      `json:"puid,omitempty"`
-	Column    ColumnNode  `json:"column,omitempty"`
-	Unknown   UnknownNode `json:"unknown,omitempty"`
-	Value     ValueNode   `json:"value,omitempty"`
-	Resolved  bool        `json:"resolved,omitempty"`
-	Type      string      `json:"type,omitempty"`
-	Operation string      `json:"operation,omitempty"`
+	UID       string       `json:"uid,omitempty"`
+	Word      string       `json:"word,omitempty"`
+	PUID      string       `json:"puid,omitempty"`
+	Column    *ColumnNode  `json:"column,omitempty"`
+	Unknown   *UnknownNode `json:"unknown,omitempty"`
+	Value     *ValueNode   `json:"value,omitempty"`
+	Resolved  bool         `json:"resolved,omitempty"`
+	Type      string       `json:"type,omitempty"`
+	Operation string       `json:"operation,omitempty"`
 }
 
 //Copy will return a copy of the node
