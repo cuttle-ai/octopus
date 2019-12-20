@@ -7,9 +7,12 @@ package interpreter
 import (
 	"errors"
 	"fmt"
+	"sort"
 	"strings"
+	"time"
 
 	goahocorasick "github.com/anknown/ahocorasick"
+	"github.com/cuttle-ai/octopus/datetime"
 )
 
 /*
@@ -19,11 +22,20 @@ import (
 //Tokenize will tokenize a given sentence according to the tokenizer of the given id
 func Tokenize(id string, sentence []rune) ([]FastToken, error) {
 	/*
+	 * We will initiate the datetime service
 	 * We will make a request to the tokenizer to get the sentence tokenized
 	 * Then we will build the unknowns
+	 * Then we will adjust the date nodes
 	 * Then we will adjust the postions
 	 * Then we will do a fast token for all the tokens and return the same
 	 */
+	//start checking for the dates
+	ch, err := StartCheckingForDates(sentence)
+	if err != nil {
+		//error while checking for the dates
+		return nil, err
+	}
+
 	//requesting the tokenizer to tokenize the given sentence
 	req := Request{
 		ID:       id,
@@ -39,6 +51,9 @@ func Tokenize(id string, sentence []rune) ([]FastToken, error) {
 
 	//building the unknowns
 	res.Matches = BuildUnknowns(sentence, res.Matches)
+
+	//adjusting the date fields
+	res.Matches = AdjustDates(res.Matches, ch)
 
 	//adjusting the positions of the tokens according to the position in the token list
 	res.Matches = AdjustPositions(res.Matches)
@@ -229,4 +244,75 @@ func AdjustPositions(toks []Token) []Token {
 	}
 
 	return result
+}
+
+//StartCheckingForDates will initaite the service which starts checking for the date/time presence in the query
+func StartCheckingForDates(sentence []rune) (chan datetime.Results, error) {
+	ser, err := datetime.DefaultService()
+	if err != nil {
+		return nil, errors.New("Error while getting the date service" + err.Error())
+	}
+	return ser.Query(sentence), nil
+}
+
+type timeResults []datetime.Response
+
+func (r timeResults) Len() int           { return len(r) }
+func (r timeResults) Swap(i, j int)      { r[i], r[j] = r[j], r[i] }
+func (r timeResults) Less(i, j int) bool { return r[i].Start < r[j].Start }
+
+type dateNodeProcess struct {
+	dIndex   int
+	indicies []int
+}
+
+//AdjustDates will replace the unknown nodes with dates nodes if a valid response from date service is received for its place
+func AdjustDates(toks []Token, ch chan datetime.Results) []Token {
+	/*
+	 * Then we will wait for the channel to dump results
+	 * We will check whether the results are valid or not
+	 * Then we will process it
+	 */
+	//wait for the channel to dump response
+	result := &datetime.Results{}
+	select {
+	case res := <-ch:
+		result = &res
+	case <-time.After(3 * time.Second):
+		break
+	}
+
+	//checking whether the results are valid or not
+	if !result.IsValid() {
+		return toks
+	}
+
+	//processing the result
+	//we will iterate through the results and store the valid results
+	//then we will cross check those ones with the tokens by iterating through them
+	//if found match we will replace those unknown tokens
+	validResults := []datetime.Response{}
+	for _, resp := range result.Res {
+		if resp.IsValid() {
+			validResults = append(validResults, resp)
+		}
+	}
+	sort.Sort(timeResults(validResults))
+	// indices, curr, j := []dateNodeProcess{}, dateNodeProcess{indicies: []int{}}, 0
+	// for i := 0; i < len(toks) && j < len(validResults); i++ {
+	// 	ok, next := checkUnknowMatch(validResults[j], toks[i])
+	// 	if !ok && next {
+	// 		j++
+	// 		indices = []int{}
+	// 		continue
+	// 	} else if ok && next {
+
+	// 	}
+	// }
+
+	return toks
+}
+
+func checkUnknowMatch(res datetime.Response, tok Token) (bool, bool) {
+	return false, true
 }

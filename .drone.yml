@@ -37,6 +37,6 @@ pipeline:
       command_timeout: 2m
       script:
         - kill `ps aux | grep -F '/var/www/html/play.octopus/lsp/lsp' | grep -v -F 'grep' | awk '{ print $2 }'`
-        - nohup /var/www/html/play.octopus/lsp/lsp > /dev/null 2>&1 &
+        - nohup DUCKLING_SERVER=${DUCKLING_SERVER} /var/www/html/play.octopus/lsp/lsp > /dev/null 2>&1 &
       when:
         branch: master

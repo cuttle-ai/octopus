@@ -68,6 +68,17 @@ func (r *Response) IsValid() bool {
 	return r.Value.IsValid() && r.Dim == "time"
 }
 
+//IsValid will check and update the state of the results
+func (r *Results) IsValid() bool {
+	one := false
+	for i := 0; i < len(r.Res); i++ {
+		if &(r.Res[i]).IsValid() {
+			one = true
+		}
+	}
+	return one
+}
+
 //DefaultService will return a service to provide the interpretation of datetime
 func DefaultService() (Service, error) {
 	return NewDuckling()
