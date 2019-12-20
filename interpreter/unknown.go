@@ -18,9 +18,9 @@ type UnknownNode struct {
 	UID string
 	//Word is the word with which the unknown node has to be matched
 	Word []rune
-	//PUID is the UID of operator's parent node
+	//PUID is the UID of unknown's parent node
 	PUID string
-	//PN is the parent node of the operator. It will be a KnowledgeBase
+	//PN is the parent node of the unknown. It will be a KnowledgeBase
 	PN Node
 	//Resolved indicates that the node is resolved
 	Resolved bool
@@ -79,7 +79,7 @@ func (u *UnknownNode) MarshalJSON() ([]byte, error) {
 
 //UnmarshalJSON decodes the node from a json
 func (u *UnknownNode) UnmarshalJSON(data []byte) error {
-	m := &columnNode{}
+	m := &unknownNode{}
 	err := json.Unmarshal(data, m)
 	if err != nil {
 		return err

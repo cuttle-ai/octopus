@@ -32,6 +32,8 @@ const (
 	Ignore Type = 9
 	//Context node if found indicates that there is an context to the query and certain values can be inferrerd from that
 	Context Type = 10
+	//Time node represents a time data
+	Time Type = 11
 )
 
 //Node is the interface to be implemented for considering it as a basic building block in octopus

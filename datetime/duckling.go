@@ -10,6 +10,7 @@ import (
 	"log"
 	"net/http"
 	"net/url"
+	"os"
 	"strings"
 	"time"
 )
@@ -29,7 +30,7 @@ type Duckling struct {
 //will return an error
 func NewDuckling() (*Duckling, error) {
 
-	url := "http://duckling.cuttle.ai:8000" //os.Getenv("DUCKLING_SERVER")
+	url := os.Getenv("DUCKLING_SERVER")
 	if len(url) == 0 {
 		return nil, errors.New("DUCKLING_SERVER host address is missing in environment variables. Add host address where duckling is running to use Duckling as datetime service")
 	}

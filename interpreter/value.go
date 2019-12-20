@@ -82,7 +82,7 @@ func (v *ValueNode) MarshalJSON() ([]byte, error) {
 
 //UnmarshalJSON decodes the node from a json
 func (v *ValueNode) UnmarshalJSON(data []byte) error {
-	m := &columnNode{}
+	m := &valueNode{}
 	err := json.Unmarshal(data, m)
 	if err != nil {
 		return err

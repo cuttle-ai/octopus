@@ -97,7 +97,7 @@ func (o *OperatorNode) MarshalJSON() ([]byte, error) {
 
 //UnmarshalJSON decodes the node from a json
 func (o *OperatorNode) UnmarshalJSON(data []byte) error {
-	m := &OperatorNode{}
+	m := &operatorNode{}
 	err := json.Unmarshal(data, m)
 	if err != nil {
 		return err
