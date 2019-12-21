@@ -8,6 +8,7 @@ import (
 	"errors"
 	"fmt"
 	"sort"
+	"strconv"
 	"strings"
 	"time"
 
@@ -49,11 +50,13 @@ func Tokenize(id string, sentence []rune) ([]FastToken, error) {
 		return nil, errors.New("couldn't tokenize the given sentence for the id " + id)
 	}
 
+	//adjusting the date fields
+	//adding the date fields before adding unknowns is important as the
+	//positions still refers to the original position in the sentence
+	res.Matches = BuildTimeNodes(res.Matches, ch)
+
 	//building the unknowns
 	res.Matches = BuildUnknowns(sentence, res.Matches)
-
-	//adjusting the date fields
-	res.Matches = AdjustDates(res.Matches, ch)
 
 	//adjusting the positions of the tokens according to the position in the token list
 	res.Matches = AdjustPositions(res.Matches)
@@ -261,13 +264,10 @@ func (r timeResults) Len() int           { return len(r) }
 func (r timeResults) Swap(i, j int)      { r[i], r[j] = r[j], r[i] }
 func (r timeResults) Less(i, j int) bool { return r[i].Start < r[j].Start }
 
-type dateNodeProcess struct {
-	dIndex   int
-	indicies []int
-}
-
-//AdjustDates will replace the unknown nodes with dates nodes if a valid response from date service is received for its place
-func AdjustDates(toks []Token, ch chan datetime.Results) []Token {
+//BuildTimeNodes will insert time nodes if a valid response from date service is received for its place
+//This function won't replace any existing tokens. If conflict between existing node and time node come,
+// the time node will be skipped with priority given to the existing node.
+func BuildTimeNodes(toks []Token, ch chan datetime.Results) []Token {
 	/*
 	 * Then we will wait for the channel to dump results
 	 * We will check whether the results are valid or not
@@ -288,9 +288,8 @@ func AdjustDates(toks []Token, ch chan datetime.Results) []Token {
 	}
 
 	//processing the result
-	//we will iterate through the results and store the valid results
-	//then we will cross check those ones with the tokens by iterating through them
-	//if found match we will replace those unknown tokens
+	//first we will sort the valid results according to the start and end position
+	//then we will insert the tokens for time nodes in between the tokens
 	validResults := []datetime.Response{}
 	for _, resp := range result.Res {
 		if resp.IsValid() {
@@ -298,21 +297,60 @@ func AdjustDates(toks []Token, ch chan datetime.Results) []Token {
 		}
 	}
 	sort.Sort(timeResults(validResults))
-	// indices, curr, j := []dateNodeProcess{}, dateNodeProcess{indicies: []int{}}, 0
-	// for i := 0; i < len(toks) && j < len(validResults); i++ {
-	// 	ok, next := checkUnknowMatch(validResults[j], toks[i])
-	// 	if !ok && next {
-	// 		j++
-	// 		indices = []int{}
-	// 		continue
-	// 	} else if ok && next {
+	i, j := 0, 0
+	for i < len(validResults) {
+		result := validResults[i]
+		startIndex := result.Start
+		endIndex := result.End
+		//if the end index is < the token's position, then we can
+		//insert the result as a time node to the tokens
+		if endIndex < toks[j].Pos {
+			tok := Token{
+				Pos: startIndex,
+				Nodes: []Node{
+					&TimeNode{
+						UID:  "T" + strconv.Itoa(i),
+						Word: []rune(result.Value.Value),
+						Gran: result.Value.Gran,
+						Time: *result.Value.Time,
+					},
+				},
+			}
+			toks = append(toks[:j], append([]Token{tok}, toks[j:]...)...)
+			i++
+		} else if startIndex <= toks[j].Pos {
+			//if the time result has intersected a known node
+			//then priority is for the known know node, so we skip and move ahead
+			i++
+			j++
+		} else if startIndex > toks[j].Pos {
+			//we haven't reached the relevant position in the token
+			j++
+		}
 
-	// 	}
-	// }
+		if j >= len(toks) {
+			//we have exhausted the token list now we will append
+			//the remianing time results to the tokens list
+			timeNodes := []Token{}
+			for i < len(validResults) {
+
+				result = validResults[i]
+				startIndex = result.Start
+				timeNodes = append(timeNodes, Token{
+					Pos: startIndex,
+					Nodes: []Node{
+						&TimeNode{
+							UID:  "T" + strconv.Itoa(i),
+							Word: []rune(result.Value.Value),
+							Gran: result.Value.Gran,
+							Time: *result.Value.Time,
+						},
+					},
+				})
+			}
+			toks = append(toks, timeNodes...)
+		}
+	}
 
 	return toks
-}
-
-func checkUnknowMatch(res datetime.Response, tok Token) (bool, bool) {
-	return false, true
 }

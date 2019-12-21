@@ -11,8 +11,8 @@ import "time"
 type Value struct {
 	//String value of the time
 	Value string `json:"value,omitempty"`
-	//Grain of the time to like hour, day etc described by the text
-	Grain string `json:"grain,omitempty"`
+	//Gran of the time to like hour, day etc described by the text
+	Gran string `json:"gran,omitempty"`
 	//Time stores the time value
 	Time *time.Time `json:"-"`
 	//Error will be set once isvalid is run if parsing failed
@@ -72,7 +72,7 @@ func (r *Response) IsValid() bool {
 func (r *Results) IsValid() bool {
 	one := false
 	for i := 0; i < len(r.Res); i++ {
-		if &(r.Res[i]).IsValid() {
+		if (&(r.Res[i])).IsValid() {
 			one = true
 		}
 	}

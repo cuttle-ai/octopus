@@ -4,9 +4,10 @@
 
 package interpreter
 
-import "encoding/json"
-
-import "time"
+import (
+	"encoding/json"
+	"time"
+)
 
 /*
  * This file contains the defnition of time type node
@@ -41,70 +42,72 @@ type timeNode struct {
 }
 
 //Copy will return a copy of the node
-func (u *TimeNode) Copy() Node {
+func (t *TimeNode) Copy() Node {
 	return &TimeNode{
-		UID:      u.UID,
-		Word:     u.Word,
-		PN:       u.PN,
-		PUID:     u.PUID,
-		Resolved: u.Resolved,
+		UID:      t.UID,
+		Word:     t.Word,
+		PN:       t.PN,
+		PUID:     t.PUID,
+		Resolved: t.Resolved,
+		Time:     t.Time,
+		Gran:     t.Gran,
 	}
 }
 
 //ID returns the unique id of the node
-func (u *TimeNode) ID() string {
-	return u.UID
+func (t *TimeNode) ID() string {
+	return t.UID
 }
 
 //Type returns Unknown Type
-func (u *TimeNode) Type() Type {
+func (t *TimeNode) Type() Type {
 	return Unknown
 }
 
 //TokenWord returns the word property of the node
-func (u *TimeNode) TokenWord() []rune {
-	return u.Word
+func (t *TimeNode) TokenWord() []rune {
+	return t.Word
 }
 
 //PID returns the PUID if the node
-func (u *TimeNode) PID() string {
-	return u.PUID
+func (t *TimeNode) PID() string {
+	return t.PUID
 }
 
 //Parent returns the PN of the node
-func (u *TimeNode) Parent() Node {
-	return u.PN
+func (t *TimeNode) Parent() Node {
+	return t.PN
 }
 
 //MarshalJSON encodes the node into a serializable json
-func (u *TimeNode) MarshalJSON() ([]byte, error) {
+func (t *TimeNode) MarshalJSON() ([]byte, error) {
 	return json.Marshal(&timeNode{
-		u.UID, string(u.Word), u.PUID, u.Resolved, u.Time, u.Gran, "Date",
+		t.UID, string(t.Word), t.PUID, t.Resolved, t.Time, t.Gran, "Date",
 	})
 }
 
 //UnmarshalJSON decodes the node from a json
-func (u *TimeNode) UnmarshalJSON(data []byte) error {
+func (t *TimeNode) UnmarshalJSON(data []byte) error {
 	m := &timeNode{}
 	err := json.Unmarshal(data, m)
 	if err != nil {
 		return err
 	}
-	u.UID = m.UID
-	u.Word = []rune(m.Word)
-	u.PUID = m.PUID
-	u.Resolved = m.Resolved
-	u.Time = m.Time
-	u.Gran = m.Gran
+	t.UID = m.UID
+	t.Word = []rune(m.Word)
+	t.PUID = m.PUID
+	t.Resolved = m.Resolved
+	t.Time = m.Time
+	t.Gran = m.Gran
 	return nil
 }
 
 //IsResolved will return true if the node is resolved
-func (u *TimeNode) IsResolved() bool {
-	return u.Resolved
+func (t *TimeNode) IsResolved() bool {
+	return t.Resolved
 }
 
 //SetResolved will set the resolved state of the node
-func (u *TimeNode) SetResolved(state bool) {
-	u.Resolved = state
+func (t *TimeNode) SetResolved(state bool) {
+	t.Resolved = state
 }
