@@ -27,6 +27,10 @@ type TableNode struct {
 	Children []ColumnNode
 	//Resolved indicates that the node is resolved
 	Resolved bool
+	//DefaultDateFieldUID is the uid of the default date field in the table
+	DefaultDateFieldUID string
+	//DefaultDateField is the default column to be selected as date in the table
+	DefaultDateField *ColumnNode
 }
 
 type tableNode struct {

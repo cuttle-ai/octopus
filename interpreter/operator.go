@@ -13,6 +13,21 @@ import "encoding/json"
 //EqOperator indicates equal to operator
 const EqOperator = "="
 
+//NotEqOperator indicates not equal to operator
+const NotEqOperator = "!="
+
+//GreaterOperator indicates greater than operator
+const GreaterOperator = ">="
+
+//LessOperator indicates less than or equal to operator
+const LessOperator = "<="
+
+//ContainsOperator indicates contains operator
+const ContainsOperator = "has"
+
+//LikeOperator indicates like operator
+const LikeOperator = "%"
+
 //OperatorNode is the node storing the information about a operator.
 //Filters are set based on this node. It depends upon a column and value/unknown
 type OperatorNode struct {
@@ -32,6 +47,8 @@ type OperatorNode struct {
 	Unknown *UnknownNode
 	//Value is the value to be applied to the column node with the operator
 	Value *ValueNode
+	//Time is the time node to be applied to the column node with the operator
+	Time *TimeNode
 	//Operation is the operation applied by the node
 	Operation string
 }

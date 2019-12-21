@@ -32,6 +32,7 @@ var SelectColumn = interpreter.Rule{
 			qu.Select = []interpreter.ColumnNode{}
 		}
 		qu.Select = append(qu.Select, toks[index].Columns[0])
+		qu.Tables[toks[index].Columns[0].PUID] = *((toks[index].Columns[0].PN.Copy()).(*interpreter.TableNode))
 
 		return qu, nil
 	},

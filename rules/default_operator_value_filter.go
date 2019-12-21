@@ -45,6 +45,7 @@ var DefaultOperatorValueFilter = interpreter.Rule{
 			qu.Filters = []interpreter.OperatorNode{}
 		}
 		qu.Filters = append(qu.Filters, operator)
+		qu.Tables[operator.Column.PUID] = *((operator.Column.PN.Copy()).(*interpreter.TableNode))
 
 		return qu, nil
 	},

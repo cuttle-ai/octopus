@@ -82,7 +82,7 @@ func (t *TimeNode) Parent() Node {
 //MarshalJSON encodes the node into a serializable json
 func (t *TimeNode) MarshalJSON() ([]byte, error) {
 	return json.Marshal(&timeNode{
-		t.UID, string(t.Word), t.PUID, t.Resolved, t.Time, t.Gran, "Date",
+		t.UID, string(t.Word), t.PUID, t.Resolved, t.Time, t.Gran, "Time",
 	})
 }
 
