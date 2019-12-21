@@ -10,6 +10,8 @@ package interpreter
 
 //Query has the interpreted query info
 type Query struct {
+	//Tables has the map of tables whose data is being accessed by the query
+	Tables map[string]TableNode
 	//Select has the list of columns to be selected from the data
 	Select []ColumnNode `json:"select,omitempty"`
 	//GroupBy has the list of columns to be used for group the data

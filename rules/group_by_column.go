@@ -32,6 +32,7 @@ var GroupByColumn = interpreter.Rule{
 			qu.GroupBy = []interpreter.ColumnNode{}
 		}
 		qu.GroupBy = append(qu.GroupBy, toks[index].Columns[0])
+		qu.Tables[toks[index].Columns[0].PUID] = *((toks[index].Columns[0].PN.Copy()).(*interpreter.TableNode))
 
 		return qu, nil
 	},

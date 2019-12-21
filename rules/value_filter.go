@@ -40,6 +40,7 @@ var ValueFilter = interpreter.Rule{
 			qu.Filters = []interpreter.OperatorNode{}
 		}
 		qu.Filters = append(qu.Filters, toks[index+1].Operators[0])
+		qu.Tables[toks[index].Columns[0].PUID] = *((toks[index].Columns[0].PN.Copy()).(*interpreter.TableNode))
 
 		return qu, nil
 	},
