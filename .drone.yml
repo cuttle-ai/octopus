@@ -45,7 +45,8 @@ pipeline:
     image: appleboy/drone-ssh
     group: ssh
     envs:
-      - duckling_server
+      duckling_server:
+        from_secret: duckling_server
     host:
       - play.octopus.cuttle.ai
     port: 22
@@ -55,9 +56,9 @@ pipeline:
       from_secret: ssh_key
     command_timeout: 2m
     script:
+      - echo $DUCKLING_SERVER
       - export DUCKLING_SERVER=$DUCKLING_SERVER
       - kill `ps aux | grep -F '/var/www/html/play.octopus/lsp/lsp' | grep -v -F 'grep' | awk '{ print $2 }'`
       - nohup /var/www/html/play.octopus/lsp/lsp > /dev/null 2>&1 &
-      - echo $DUCKLING_SERVER
     when:
       branch: deployment-trias
