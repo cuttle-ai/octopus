@@ -6,7 +6,8 @@ package interpreter
 
 import (
 	"encoding/json"
-	"time"
+
+	"github.com/cuttle-ai/octopus/datetime"
 )
 
 /*
@@ -23,22 +24,19 @@ type TimeNode struct {
 	PUID string
 	//PN is the parent node of the time. It will be a KnowledgeBase
 	PN Node
-	//Time is the time represented by the node
-	Time time.Time
-	//Gran is the granularity of the time
-	Gran string
+	//Value is the value of the timenode
+	Value datetime.Value
 	//Resolved indicates that the node is resolved
 	Resolved bool
 }
 
 type timeNode struct {
-	UID      string    `json:"uid,omitempty"`
-	Word     string    `json:"word,omitempty"`
-	PUID     string    `json:"puid,omitempty"`
-	Resolved bool      `json:"resolved,omitempty"`
-	Time     time.Time `json:"time,omitempty"`
-	Gran     string    `json:"gran,omitempty"`
-	Type     string    `json:"type,omitempty"`
+	UID      string         `json:"uid,omitempty"`
+	Word     string         `json:"word,omitempty"`
+	PUID     string         `json:"puid,omitempty"`
+	Resolved bool           `json:"resolved,omitempty"`
+	Value    datetime.Value `json:"value,omitempty"`
+	Type     string         `json:"type,omitempty"`
 }
 
 //Copy will return a copy of the node
@@ -49,8 +47,7 @@ func (t *TimeNode) Copy() Node {
 		PN:       t.PN,
 		PUID:     t.PUID,
 		Resolved: t.Resolved,
-		Time:     t.Time,
-		Gran:     t.Gran,
+		Value:    t.Value,
 	}
 }
 
@@ -61,7 +58,7 @@ func (t *TimeNode) ID() string {
 
 //Type returns Unknown Type
 func (t *TimeNode) Type() Type {
-	return Unknown
+	return Time
 }
 
 //TokenWord returns the word property of the node
@@ -82,7 +79,7 @@ func (t *TimeNode) Parent() Node {
 //MarshalJSON encodes the node into a serializable json
 func (t *TimeNode) MarshalJSON() ([]byte, error) {
 	return json.Marshal(&timeNode{
-		t.UID, string(t.Word), t.PUID, t.Resolved, t.Time, t.Gran, "Time",
+		t.UID, string(t.Word), t.PUID, t.Resolved, t.Value, "Time",
 	})
 }
 
@@ -97,8 +94,7 @@ func (t *TimeNode) UnmarshalJSON(data []byte) error {
 	t.Word = []rune(m.Word)
 	t.PUID = m.PUID
 	t.Resolved = m.Resolved
-	t.Time = m.Time
-	t.Gran = m.Gran
+	t.Value = m.Value
 	return nil
 }
 

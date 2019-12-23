@@ -137,6 +137,8 @@ func BuildPattern(tokens []FastToken) []Type {
 			result = append(result, Operator)
 		} else if len(v.Values) > 0 {
 			result = append(result, Value)
+		} else if len(v.Times) > 0 {
+			result = append(result, Time)
 		} else if len(v.Columns) > 0 {
 			result = append(result, Column)
 		} else if len(v.Tables) > 0 {

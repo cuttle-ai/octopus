@@ -211,24 +211,24 @@ func BuildUnknowns(sentence []rune, toks []Token) []Token {
 	}
 
 	//split the words with space
-	for _, w := range words {
-		ws := strings.Split(string(w), " ")
-		for i, wr := range ws {
-			//no need to take empty strings
-			if len(wr) == 0 {
-				continue
-			}
-			tok := Token{
-				Word: []rune(wr),
-			}
-			oTok, ok := tokenMap[wr]
-			if ok {
-				tok.Nodes = oTok.Nodes
-			} else {
-				tok.Nodes = []Node{&UnknownNode{UID: fmt.Sprint("U", i), Word: []rune(wr)}}
-			}
-			result = append(result, tok)
+	for i, w := range words {
+		// ws := strings.Split(string(w), " ")
+		// for i, wr := range ws {
+		//no need to take empty strings
+		if len(w) == 0 {
+			continue
 		}
+		tok := Token{
+			Word: []rune(w),
+		}
+		oTok, ok := tokenMap[string(w)]
+		if ok {
+			tok.Nodes = oTok.Nodes
+		} else {
+			tok.Nodes = []Node{&UnknownNode{UID: fmt.Sprint("U", i), Word: []rune(w)}}
+		}
+		result = append(result, tok)
+		// }
 	}
 
 	return result
@@ -306,13 +306,13 @@ func BuildTimeNodes(toks []Token, ch chan datetime.Results) []Token {
 		//insert the result as a time node to the tokens
 		if endIndex < toks[j].Pos {
 			tok := Token{
-				Pos: startIndex,
+				Pos:  startIndex,
+				Word: []rune(result.Body),
 				Nodes: []Node{
 					&TimeNode{
-						UID:  "T" + strconv.Itoa(i),
-						Word: []rune(result.Value.Value),
-						Gran: result.Value.Gran,
-						Time: *result.Value.Time,
+						UID:   "T" + strconv.Itoa(i),
+						Word:  []rune(result.Value.Value),
+						Value: result.Value,
 					},
 				},
 			}
@@ -337,16 +337,17 @@ func BuildTimeNodes(toks []Token, ch chan datetime.Results) []Token {
 				result = validResults[i]
 				startIndex = result.Start
 				timeNodes = append(timeNodes, Token{
-					Pos: startIndex,
+					Pos:  startIndex,
+					Word: []rune(result.Body),
 					Nodes: []Node{
 						&TimeNode{
-							UID:  "T" + strconv.Itoa(i),
-							Word: []rune(result.Value.Value),
-							Gran: result.Value.Gran,
-							Time: *result.Value.Time,
+							UID:   "T" + strconv.Itoa(i),
+							Word:  []rune(result.Body),
+							Value: result.Value,
 						},
 					},
 				})
+				i++
 			}
 			toks = append(toks, timeNodes...)
 		}

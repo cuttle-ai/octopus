@@ -21,7 +21,7 @@ var testColumn = &interpreter.ColumnNode{UID: "car", PUID: "automobile-sales", P
 
 var testColumn1 = &interpreter.ColumnNode{UID: "brand", PUID: "automobile-sales", PN: testCollection, Word: []rune("brand"), Dimension: true, DataType: interpreter.DataTypeString}
 
-var testColumn2 = &interpreter.ColumnNode{UID: "year", PUID: "automobile-sales", PN: testCollection, Word: []rune("year"), Dimension: true, DataType: interpreter.DataTypeDate}
+var testColumn2 = &interpreter.ColumnNode{UID: "financial-year", PUID: "automobile-sales", PN: testCollection, Word: []rune("financial-year"), Dimension: true, DataType: interpreter.DataTypeDate}
 
 var testColumn3 = &interpreter.ColumnNode{UID: "sales", PUID: "automobile-sales", PN: testCollection, Word: []rune("sales"), Measure: true, DataType: interpreter.DataTypeInt}
 
@@ -42,8 +42,8 @@ func init() {
 }
 
 var testTokens = map[string]interpreter.Token{
-	"year": interpreter.Token{
-		Word:  []rune("year"),
+	"financial-year": interpreter.Token{
+		Word:  []rune("financial-year"),
 		Nodes: []interpreter.Node{testColumn2},
 	},
 	"sales": interpreter.Token{
@@ -65,10 +65,6 @@ var testTokens = map[string]interpreter.Token{
 	"is": interpreter.Token{
 		Word:  []rune("is"),
 		Nodes: []interpreter.Node{testOperator},
-	},
-	"since": interpreter.Token{
-		Word:  []rune("since"),
-		Nodes: []interpreter.Node{greaterThanOperator},
 	},
 	"not": interpreter.Token{
 		Word:  []rune("not"),
