@@ -59,6 +59,6 @@ pipeline:
     script:
       - export DUCKLING_SERVER
       - kill `ps aux | grep -F '/var/www/html/play.octopus/lsp/lsp' | grep -v -F 'grep' | awk '{ print $2 }'`
-      - nohup DUCKLING_SERVER=$${DUCKLING_SERVER} /var/www/html/play.octopus/lsp/lsp > /dev/null 2>&1 &
+      - echo $$DUCKLING_SERVER
     when:
       branch: deployment-trias
