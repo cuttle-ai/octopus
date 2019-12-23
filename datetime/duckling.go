@@ -54,7 +54,7 @@ func (d *Duckling) hitAPI(resp chan Results, query string) {
 	formData := url.Values{
 		"text": {query},
 	}
-	client := http.Client{Timeout: time.Second * 3}
+	client := http.Client{Timeout: time.Second * 10}
 	req, err := http.NewRequest("POST", d.url+d.parseAPI, strings.NewReader(formData.Encode()))
 	if err != nil {
 		log.Println("Error while creating the request for duckling api", d.url+d.parseAPI, err)

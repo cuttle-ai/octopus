@@ -60,6 +60,7 @@ type operatorNode struct {
 	Column    *ColumnNode  `json:"column,omitempty"`
 	Unknown   *UnknownNode `json:"unknown,omitempty"`
 	Value     *ValueNode   `json:"value,omitempty"`
+	Time      *TimeNode    `json:"time, omitempty"`
 	Resolved  bool         `json:"resolved,omitempty"`
 	Type      string       `json:"type,omitempty"`
 	Operation string       `json:"operation,omitempty"`
@@ -75,6 +76,7 @@ func (o *OperatorNode) Copy() Node {
 		Resolved:  o.Resolved,
 		Column:    o.Column,
 		Value:     o.Value,
+		Time:      o.Time,
 		Unknown:   o.Unknown,
 		Operation: o.Operation,
 	}
@@ -108,7 +110,7 @@ func (o *OperatorNode) Parent() Node {
 //MarshalJSON encodes the node into a serializable json
 func (o *OperatorNode) MarshalJSON() ([]byte, error) {
 	return json.Marshal(&operatorNode{
-		o.UID, string(o.Word), o.PUID, o.Column, o.Unknown, o.Value, o.Resolved, "Operator", o.Operation,
+		o.UID, string(o.Word), o.PUID, o.Column, o.Unknown, o.Value, o.Time, o.Resolved, "Operator", o.Operation,
 	})
 }
 
@@ -125,6 +127,7 @@ func (o *OperatorNode) UnmarshalJSON(data []byte) error {
 	o.Column = m.Column
 	o.Unknown = m.Unknown
 	o.Value = m.Value
+	o.Time = m.Time
 	o.Resolved = m.Resolved
 	o.Operation = m.Operation
 	return nil
