@@ -13,6 +13,21 @@ import "encoding/json"
 //EqOperator indicates equal to operator
 const EqOperator = "="
 
+//NotEqOperator indicates not equal to operator
+const NotEqOperator = "!="
+
+//GreaterOperator indicates greater than operator
+const GreaterOperator = ">="
+
+//LessOperator indicates less than or equal to operator
+const LessOperator = "<="
+
+//ContainsOperator indicates contains operator
+const ContainsOperator = "has"
+
+//LikeOperator indicates like operator
+const LikeOperator = "%"
+
 //OperatorNode is the node storing the information about a operator.
 //Filters are set based on this node. It depends upon a column and value/unknown
 type OperatorNode struct {
@@ -32,6 +47,8 @@ type OperatorNode struct {
 	Unknown *UnknownNode
 	//Value is the value to be applied to the column node with the operator
 	Value *ValueNode
+	//Time is the time node to be applied to the column node with the operator
+	Time *TimeNode
 	//Operation is the operation applied by the node
 	Operation string
 }
@@ -43,6 +60,7 @@ type operatorNode struct {
 	Column    *ColumnNode  `json:"column,omitempty"`
 	Unknown   *UnknownNode `json:"unknown,omitempty"`
 	Value     *ValueNode   `json:"value,omitempty"`
+	Time      *TimeNode    `json:"time, omitempty"`
 	Resolved  bool         `json:"resolved,omitempty"`
 	Type      string       `json:"type,omitempty"`
 	Operation string       `json:"operation,omitempty"`
@@ -58,6 +76,7 @@ func (o *OperatorNode) Copy() Node {
 		Resolved:  o.Resolved,
 		Column:    o.Column,
 		Value:     o.Value,
+		Time:      o.Time,
 		Unknown:   o.Unknown,
 		Operation: o.Operation,
 	}
@@ -91,13 +110,13 @@ func (o *OperatorNode) Parent() Node {
 //MarshalJSON encodes the node into a serializable json
 func (o *OperatorNode) MarshalJSON() ([]byte, error) {
 	return json.Marshal(&operatorNode{
-		o.UID, string(o.Word), o.PUID, o.Column, o.Unknown, o.Value, o.Resolved, "Operator", o.Operation,
+		o.UID, string(o.Word), o.PUID, o.Column, o.Unknown, o.Value, o.Time, o.Resolved, "Operator", o.Operation,
 	})
 }
 
 //UnmarshalJSON decodes the node from a json
 func (o *OperatorNode) UnmarshalJSON(data []byte) error {
-	m := &OperatorNode{}
+	m := &operatorNode{}
 	err := json.Unmarshal(data, m)
 	if err != nil {
 		return err
@@ -108,6 +127,7 @@ func (o *OperatorNode) UnmarshalJSON(data []byte) error {
 	o.Column = m.Column
 	o.Unknown = m.Unknown
 	o.Value = m.Value
+	o.Time = m.Time
 	o.Resolved = m.Resolved
 	o.Operation = m.Operation
 	return nil

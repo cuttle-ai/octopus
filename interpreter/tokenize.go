@@ -7,9 +7,13 @@ package interpreter
 import (
 	"errors"
 	"fmt"
+	"sort"
+	"strconv"
 	"strings"
+	"time"
 
 	goahocorasick "github.com/anknown/ahocorasick"
+	"github.com/cuttle-ai/octopus/datetime"
 )
 
 /*
@@ -19,11 +23,20 @@ import (
 //Tokenize will tokenize a given sentence according to the tokenizer of the given id
 func Tokenize(id string, sentence []rune) ([]FastToken, error) {
 	/*
+	 * We will initiate the datetime service
 	 * We will make a request to the tokenizer to get the sentence tokenized
 	 * Then we will build the unknowns
+	 * Then we will adjust the date nodes
 	 * Then we will adjust the postions
 	 * Then we will do a fast token for all the tokens and return the same
 	 */
+	//start checking for the dates
+	ch, err := StartCheckingForDates(sentence)
+	if err != nil {
+		//error while checking for the dates
+		return nil, err
+	}
+
 	//requesting the tokenizer to tokenize the given sentence
 	req := Request{
 		ID:       id,
@@ -36,6 +49,11 @@ func Tokenize(id string, sentence []rune) ([]FastToken, error) {
 	if !res.Valid {
 		return nil, errors.New("couldn't tokenize the given sentence for the id " + id)
 	}
+
+	//adjusting the date fields
+	//adding the date fields before adding unknowns is important as the
+	//positions still refers to the original position in the sentence
+	res.Matches = BuildTimeNodes(res.Matches, ch)
 
 	//building the unknowns
 	res.Matches = BuildUnknowns(sentence, res.Matches)
@@ -193,24 +211,24 @@ func BuildUnknowns(sentence []rune, toks []Token) []Token {
 	}
 
 	//split the words with space
-	for _, w := range words {
-		ws := strings.Split(string(w), " ")
-		for i, wr := range ws {
-			//no need to take empty strings
-			if len(wr) == 0 {
-				continue
-			}
-			tok := Token{
-				Word: []rune(wr),
-			}
-			oTok, ok := tokenMap[wr]
-			if ok {
-				tok.Nodes = oTok.Nodes
-			} else {
-				tok.Nodes = []Node{&UnknownNode{UID: fmt.Sprint("U", i), Word: []rune(wr)}}
-			}
-			result = append(result, tok)
+	for i, w := range words {
+		// ws := strings.Split(string(w), " ")
+		// for i, wr := range ws {
+		//no need to take empty strings
+		if len(w) == 0 {
+			continue
 		}
+		tok := Token{
+			Word: []rune(w),
+		}
+		oTok, ok := tokenMap[string(w)]
+		if ok {
+			tok.Nodes = oTok.Nodes
+		} else {
+			tok.Nodes = []Node{&UnknownNode{UID: fmt.Sprint("U", i), Word: []rune(w)}}
+		}
+		result = append(result, tok)
+		// }
 	}
 
 	return result
@@ -229,4 +247,111 @@ func AdjustPositions(toks []Token) []Token {
 	}
 
 	return result
+}
+
+//StartCheckingForDates will initaite the service which starts checking for the date/time presence in the query
+func StartCheckingForDates(sentence []rune) (chan datetime.Results, error) {
+	ser, err := datetime.DefaultService()
+	if err != nil {
+		return nil, errors.New("Error while getting the date service" + err.Error())
+	}
+	return ser.Query(sentence), nil
+}
+
+type timeResults []datetime.Response
+
+func (r timeResults) Len() int           { return len(r) }
+func (r timeResults) Swap(i, j int)      { r[i], r[j] = r[j], r[i] }
+func (r timeResults) Less(i, j int) bool { return r[i].Start < r[j].Start }
+
+//BuildTimeNodes will insert time nodes if a valid response from date service is received for its place
+//This function won't replace any existing tokens. If conflict between existing node and time node come,
+// the time node will be skipped with priority given to the existing node.
+func BuildTimeNodes(toks []Token, ch chan datetime.Results) []Token {
+	/*
+	 * Then we will wait for the channel to dump results
+	 * We will check whether the results are valid or not
+	 * Then we will process it
+	 */
+	//wait for the channel to dump response
+	result := &datetime.Results{}
+	select {
+	case res := <-ch:
+		result = &res
+	case <-time.After(3 * time.Second):
+		break
+	}
+
+	//checking whether the results are valid or not
+	if !result.IsValid() {
+		return toks
+	}
+
+	//processing the result
+	//first we will sort the valid results according to the start and end position
+	//then we will insert the tokens for time nodes in between the tokens
+	validResults := []datetime.Response{}
+	for _, resp := range result.Res {
+		if resp.IsValid() {
+			validResults = append(validResults, resp)
+		}
+	}
+	sort.Sort(timeResults(validResults))
+	i, j := 0, 0
+	for i < len(validResults) {
+		result := validResults[i]
+		startIndex := result.Start
+		endIndex := result.End
+		//if the end index is < the token's position, then we can
+		//insert the result as a time node to the tokens
+		if endIndex < toks[j].Pos {
+			tok := Token{
+				Pos:  startIndex,
+				Word: []rune(result.Body),
+				Nodes: []Node{
+					&TimeNode{
+						UID:   "T" + strconv.Itoa(i),
+						Word:  []rune(result.Value.Value),
+						Value: result.Value,
+					},
+				},
+			}
+			toks = append(toks[:j], append([]Token{tok}, toks[j:]...)...)
+			i++
+		} else if startIndex <= toks[j].Pos {
+			//if the time result has intersected a known node
+			//then priority is for the known know node, so we skip and move ahead
+			i++
+			j++
+		} else if startIndex > toks[j].Pos {
+			//we haven't reached the relevant position in the token
+			j++
+		}
+
+		if j >= len(toks) {
+			//we have exhausted the token list now we will append
+			//the remianing time results to the tokens list
+			timeNodes := []Token{}
+			for i < len(validResults) {
+
+				result = validResults[i]
+				startIndex = result.Start
+				timeNodes = append(timeNodes, Token{
+					Pos:  startIndex,
+					Word: []rune(result.Body),
+					Nodes: []Node{
+						&TimeNode{
+							UID:   "T" + strconv.Itoa(i),
+							Word:  []rune(result.Body),
+							Value: result.Value,
+						},
+					},
+				})
+				i++
+			}
+			toks = append(toks, timeNodes...)
+		}
+	}
+
+	return toks
 }

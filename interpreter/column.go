@@ -126,7 +126,7 @@ func (c *ColumnNode) MarshalJSON() ([]byte, error) {
 
 //UnmarshalJSON decodes the node from a json
 func (c *ColumnNode) UnmarshalJSON(data []byte) error {
-	m := &columnNode{}
+	m := &ColumnNode{}
 	err := json.Unmarshal(data, m)
 	if err != nil {
 		return err

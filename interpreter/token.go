@@ -37,6 +37,8 @@ type FastToken struct {
 	Operators []OperatorNode
 	//Unknowns is the list of unknows nodes in the token
 	Unknowns []UnknownNode
+	//Times is the list of time nodes in the token
+	Times []TimeNode
 }
 
 //FastToken returns the converted fast token of the token
@@ -84,6 +86,14 @@ func (t Token) FastToken() FastToken {
 					result.Unknowns = []UnknownNode{}
 				}
 				result.Unknowns = append(result.Unknowns, *un)
+			}
+		case Time:
+			tn, ok := n.(*TimeNode)
+			if ok {
+				if result.Times == nil {
+					result.Times = []TimeNode{}
+				}
+				result.Times = append(result.Times, *tn)
 			}
 		}
 	}

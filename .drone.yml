@@ -1,42 +1,44 @@
 pipeline:
-    build:
-      image: golang
-      commands:
-        - go version
-        - cd lsp
-        - go build
-  
-    deploy:
-      image: appleboy/drone-scp
-      host:
-        - play.octopus.cuttle.ai
-      port: 22
-      username:
-        from_secret: scp-username
-      target: /var/www/html/play.octopus
-      key: 
-        from_secret: ssh_key
-      source:
-        - "lsp/lsp"
-      when:
-        branch: master
-    
-    run:
-      image: appleboy/drone-ssh
-      group: ssh
-      envs:
-        DUCKLING_SERVER:
-          from_secret: duckling-server
-      host:
-        - play.octopus.cuttle.ai
-      port: 22
-      username:
-        from_secret: scp-username
-      key: 
-        from_secret: ssh_key
-      command_timeout: 2m
-      script:
-        - kill `ps aux | grep -F '/var/www/html/play.octopus/lsp/lsp' | grep -v -F 'grep' | awk '{ print $2 }'`
-        - nohup /var/www/html/play.octopus/lsp/lsp > /dev/null 2>&1 &
-      when:
-        branch: master
+  build:
+    image: golang
+    commands:
+      - go version
+      - cd lsp
+      - go build
+
+  deploy:
+    image: appleboy/drone-scp
+    host:
+      - play.octopus.cuttle.ai
+    port: 22
+    username:
+      from_secret: scp-username
+    target: /var/www/html/play.octopus
+    key:
+      from_secret: ssh_key
+    source:
+      - "lsp/lsp"
+    when:
+      branch: master
+
+  run:
+    image: appleboy/drone-ssh
+    group: ssh
+    secrets:
+      - source: duckling_server
+        target: duckling_server
+    envs: duckling_server
+    host:
+      - play.octopus.cuttle.ai
+    port: 22
+    username:
+      from_secret: scp-username
+    key:
+      from_secret: ssh_key
+    command_timeout: 2m
+    script:
+      - export DUCKLING_SERVER=$DUCKLING_SERVER
+      - kill `ps aux | grep -F '/var/www/html/play.octopus/lsp/lsp' | grep -v -F 'grep' | awk '{ print $2 }'`
+      - nohup /var/www/html/play.octopus/lsp/lsp > /dev/null 2>&1 &
+    when:
+      branch: master

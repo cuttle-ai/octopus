@@ -21,7 +21,7 @@ func Interpret(toks []FastToken) (*Query, error) {
 	rules := MatchRules(toks)
 
 	//iterating through the rules to resolve them
-	q := &Query{}
+	q := &Query{Tables: map[string]TableNode{}}
 	for _, rule := range rules {
 		for _, i := range rule.Matches {
 			qu, err := rule.Resolve(*q, toks, i)
