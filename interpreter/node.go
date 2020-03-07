@@ -59,3 +59,9 @@ type Node interface {
 	//Copy will make the copy of the node
 	Copy() Node
 }
+
+//Universe is the collection of the knowlegdebase
+type Universe struct {
+	//Galaxies stores the knowledgebases mapped to their uid
+	Galaxies map[string]KnowledgeBaseNode
+}

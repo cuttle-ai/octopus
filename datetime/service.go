@@ -72,7 +72,7 @@ func (r *Response) IsValid() bool {
 func (r *Results) IsValid() bool {
 	one := false
 	for i := 0; i < len(r.Res); i++ {
-		if &(r.Res[i]).IsValid() {
+		if (&(r.Res[i])).IsValid() {
 			one = true
 		}
 	}
