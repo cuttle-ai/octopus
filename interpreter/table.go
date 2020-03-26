@@ -31,28 +31,36 @@ type TableNode struct {
 	DefaultDateFieldUID string
 	//DefaultDateField is the default column to be selected as date in the table
 	DefaultDateField *ColumnNode
+	//Description of the node
+	Description string
 }
 
 type tableNode struct {
-	UID      string       `json:"uid,omitempty"`
-	Word     string       `json:"word,omitempty"`
-	PUID     string       `json:"puid,omitempty"`
-	Name     string       `json:"name,omitempty"`
-	Children []ColumnNode `json:"children,omitempty"`
-	Resolved bool         `json:"resolved,omitempty"`
-	Type     string       `json:"type,omitempty"`
+	UID                 string       `json:"uid,omitempty"`
+	Word                string       `json:"word,omitempty"`
+	PUID                string       `json:"puid,omitempty"`
+	Name                string       `json:"name,omitempty"`
+	Children            []ColumnNode `json:"children,omitempty"`
+	Resolved            bool         `json:"resolved,omitempty"`
+	Type                string       `json:"type,omitempty"`
+	DefaultDateFieldUID string       `json:"default_date_field_uid,omitempty"`
+	DefaultDateField    *ColumnNode  `json:"default_date_field,omitempty"`
+	Description         string       `json:"description"`
 }
 
 //Copy will return a copy of the node
 func (t *TableNode) Copy() Node {
 	return &TableNode{
-		UID:      t.UID,
-		Word:     t.Word,
-		PN:       t.PN,
-		PUID:     t.PUID,
-		Name:     t.Name,
-		Children: t.Children,
-		Resolved: t.Resolved,
+		UID:                 t.UID,
+		Word:                t.Word,
+		PN:                  t.PN,
+		PUID:                t.PUID,
+		Name:                t.Name,
+		Children:            t.Children,
+		Resolved:            t.Resolved,
+		DefaultDateFieldUID: t.DefaultDateFieldUID,
+		DefaultDateField:    t.DefaultDateField,
+		Description:         t.Description,
 	}
 }
 
@@ -84,7 +92,7 @@ func (t *TableNode) Parent() Node {
 //MarshalJSON encodes the node into a serializable json
 func (t *TableNode) MarshalJSON() ([]byte, error) {
 	return json.Marshal(&tableNode{
-		t.UID, string(t.Word), t.PUID, t.Name, t.Children, t.Resolved, "Table",
+		t.UID, string(t.Word), t.PUID, t.Name, t.Children, t.Resolved, "Table", t.DefaultDateFieldUID, t.DefaultDateField, t.Description,
 	})
 }
 
@@ -101,6 +109,9 @@ func (t *TableNode) UnmarshalJSON(data []byte) error {
 	t.Name = m.Name
 	t.Children = m.Children
 	t.Resolved = m.Resolved
+	t.DefaultDateFieldUID = m.DefaultDateFieldUID
+	t.DefaultDateField = m.DefaultDateField
+	t.Description = m.Description
 	return nil
 }
 
