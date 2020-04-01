@@ -60,7 +60,7 @@ type operatorNode struct {
 	Column    *ColumnNode  `json:"column,omitempty"`
 	Unknown   *UnknownNode `json:"unknown,omitempty"`
 	Value     *ValueNode   `json:"value,omitempty"`
-	Time      *TimeNode    `json:"time, omitempty"`
+	Time      *TimeNode    `json:"time,omitempty"`
 	Resolved  bool         `json:"resolved,omitempty"`
 	Type      string       `json:"type,omitempty"`
 	Operation string       `json:"operation,omitempty"`
