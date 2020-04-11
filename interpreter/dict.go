@@ -23,6 +23,8 @@ const (
 	DICTGet DICTRequestType = 2
 	//DICTRemove the dictionary from the cache
 	DICTRemove DICTRequestType = 3
+	//DICTRemoveCheck will iterate over the dictionary and remove the unused dicts
+	DICTRemoveCheck DICTRequestType = 4
 )
 
 //DICTClearCheckInterval is the interval after which the dict removal check has to run
@@ -145,7 +147,7 @@ func Dictionary(in chan DICTRequest) {
 			dict[req.ID] = req.DICT
 			go SendDICTToChannel(req.Out, req)
 			break
-		case DICTRemove:
+		case DICTRemoveCheck:
 			//we will iterate over the cache and check the last usage
 			t := time.Now()
 			for k, v := range dict {
@@ -161,6 +163,15 @@ func Dictionary(in chan DICTRequest) {
 					})
 			}
 			break
+		case DICTRemove:
+			delete(dict, req.ID)
+			go SendTokenizerToChannel(
+				TokenizerInputChannel,
+				Request{
+					ID:   req.ID,
+					Type: TokenizerRemove,
+				})
+			break
 		}
 	}
 }
@@ -168,6 +179,6 @@ func Dictionary(in chan DICTRequest) {
 func cacheClearCheck(in chan DICTRequest) {
 	for {
 		time.Sleep(DICTClearCheckInterval)
-		go SendDICTToChannel(in, DICTRequest{Type: DICTRemove})
+		go SendDICTToChannel(in, DICTRequest{Type: DICTRemoveCheck})
 	}
 }
