@@ -4,7 +4,10 @@
 
 package interpreter
 
-import "time"
+import (
+	"sync"
+	"time"
+)
 
 /*
  * This file contains the defnition of dictionary in the platform for tokenizing
@@ -53,11 +56,45 @@ type DICTRequest struct {
 	Out chan DICTRequest
 }
 
+//DICTAggregator is the aggregator to get the dict from a service or database
+type DICTAggregator interface {
+	Get(ID string) (DICT, error)
+}
+
 //DICTInputChannel is the input channel to communicate with the cache
 var DICTInputChannel chan DICTRequest
 
+//defaultAggregator to be used in the dictionary
+var defaultAggregator aggregator
+
+type aggregator struct {
+	agg DICTAggregator
+	m   sync.Mutex
+}
+
+//SetDefaultDICTAggregator sets the default aggregator as the passed param
+func SetDefaultDICTAggregator(agg DICTAggregator) {
+	defaultAggregator.m.Lock()
+	defaultAggregator.agg = agg
+	defaultAggregator.m.Unlock()
+}
+
+func getDICT(ID string) (DICT, bool) {
+	defaultAggregator.m.Lock()
+	if defaultAggregator.agg == nil {
+		return DICT{}, false
+	}
+	d, err := defaultAggregator.agg.Get(ID)
+	if err != nil {
+		return DICT{}, false
+	}
+	defaultAggregator.m.Unlock()
+	return d, true
+}
+
 func init() {
 	DICTInputChannel = make(chan DICTRequest)
+	defaultAggregator = aggregator{}
 	go Dictionary(DICTInputChannel)
 }
 
@@ -92,6 +129,9 @@ func Dictionary(in chan DICTRequest) {
 			break
 		case DICTGet:
 			req.DICT, req.Valid = dict[req.ID]
+			if !req.Valid {
+				req.DICT, req.Valid = getDICT(req.ID)
+			}
 			//we will only give the copies of the dict item to avoid mutation
 			req.DICT = req.DICT.Copy()
 			req.DICT.LastUsed = time.Now()
