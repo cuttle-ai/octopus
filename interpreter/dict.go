@@ -25,6 +25,12 @@ const (
 	DICTRemove DICTRequestType = 3
 )
 
+//DICTClearCheckInterval is the interval after which the dict removal check has to run
+const DICTClearCheckInterval = time.Minute * 20
+
+//DICTExpiry is the expiry time after which the dictionary expiries without any active usage
+const DICTExpiry = time.Hour * 4
+
 //DICT holds the dictionary in the system
 type DICT struct {
 	//LastUsed indicates when the token was used last
@@ -139,14 +145,28 @@ func Dictionary(in chan DICTRequest) {
 			go SendDICTToChannel(req.Out, req)
 			break
 		case DICTRemove:
-			delete(dict, req.ID)
-			go SendTokenizerToChannel(
-				TokenizerInputChannel,
-				Request{
-					ID:   req.ID,
-					Type: TokenizerRemove,
-				})
+			//we will iterate over the cache and check the last usage
+			t := time.Now()
+			for k, v := range dict {
+				if v.LastUsed.Add(DICTExpiry).After(t) {
+					continue
+				}
+				delete(dict, k)
+				go SendTokenizerToChannel(
+					TokenizerInputChannel,
+					Request{
+						ID:   k,
+						Type: TokenizerRemove,
+					})
+			}
 			break
 		}
+	}
+}
+
+func cacheClearCheck(in chan DICTRequest) {
+	for {
+		time.Sleep(DICTClearCheckInterval)
+		go SendDICTToChannel(in, DICTRequest{Type: DICTRemove})
 	}
 }

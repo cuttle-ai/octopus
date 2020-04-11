@@ -103,8 +103,15 @@ func loadTestDICT() {
 	interpreter.SendDICTToChannel(interpreter.DICTInputChannel, req)
 }
 
+type testDictAggregator struct{}
+
+func (t testDictAggregator) Get(ID string) (interpreter.DICT, error) {
+	return testDICT, nil
+}
+
 func init() {
 	loadTestDICT()
+	interpreter.SetDefaultDICTAggregator(testDictAggregator{})
 }
 
 //GetDict will return the dictionary being used
