@@ -102,6 +102,7 @@ func init() {
 	DICTInputChannel = make(chan DICTRequest)
 	defaultAggregator = aggregator{}
 	go Dictionary(DICTInputChannel)
+	go cacheClearCheck(DICTInputChannel)
 }
 
 //SendDICTToChannel sends a dict request to the channel. This function is to be used with go routines so that
