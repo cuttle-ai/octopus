@@ -24,6 +24,7 @@ import (
 func Tokenize(id string, sentence []rune) ([]FastToken, error) {
 	/*
 	 * We will initiate the datetime service
+	 * Then we will prepcache the dictionary for the id
 	 * We will make a request to the tokenizer to get the sentence tokenized
 	 * Then we will build the unknowns
 	 * Then we will adjust the date nodes
@@ -36,6 +37,11 @@ func Tokenize(id string, sentence []rune) ([]FastToken, error) {
 		//error while checking for the dates
 		return nil, err
 	}
+
+	//precaching
+	dictReq := DICTRequest{ID: id, Type: DICTPreCache, Out: make(chan DICTRequest)}
+	SendDICTToChannel(DICTInputChannel, dictReq)
+	<-dictReq.Out
 
 	//requesting the tokenizer to tokenize the given sentence
 	req := Request{
@@ -136,6 +142,9 @@ func Cache(in chan Request) {
 			m := new(goahocorasick.Machine)
 			d := [][]rune{}
 			for word := range req.Tokenizer.Map {
+				if len(word) == 0 {
+					continue
+				}
 				d = append(d, []rune(strings.ToLower(word)))
 			}
 			if err := m.Build(d); err != nil {

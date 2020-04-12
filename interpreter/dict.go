@@ -25,6 +25,8 @@ const (
 	DICTRemove DICTRequestType = 3
 	//DICTRemoveCheck will iterate over the dictionary and remove the unused dicts
 	DICTRemoveCheck DICTRequestType = 4
+	//DICTPreCache will do a check whether dictionary is available for the user. If not will cache it
+	DICTPreCache DICTRequestType = 5
 )
 
 //DICTClearCheckInterval is the interval after which the dict removal check has to run
@@ -145,6 +147,26 @@ func Dictionary(in chan DICTRequest) {
 			req.DICT = req.DICT.Copy()
 			req.DICT.LastUsed = time.Now()
 			dict[req.ID] = req.DICT
+			go SendDICTToChannel(req.Out, req)
+			break
+		case DICTPreCache:
+			req.DICT, req.Valid = dict[req.ID]
+			if !req.Valid {
+				req.DICT, req.Valid = getDICT(req.ID)
+			}
+			if !req.Valid {
+				break
+			}
+			req.DICT.LastUsed = time.Now()
+			dict[req.ID] = req.DICT
+			SendTokenizerToChannel(
+				TokenizerInputChannel,
+				Request{
+					ID:        req.ID,
+					Type:      TokenizerAdd,
+					Out:       make(chan Request),
+					Tokenizer: Tokenizer{Map: req.DICT.Map},
+				})
 			go SendDICTToChannel(req.Out, req)
 			break
 		case DICTRemoveCheck:
