@@ -33,6 +33,8 @@ type TableNode struct {
 	DefaultDateField *ColumnNode
 	//Description of the node
 	Description string
+	//DatastoreID is Datastore to which the table belongs to
+	DatastoreID uint
 }
 
 type tableNode struct {
@@ -46,6 +48,7 @@ type tableNode struct {
 	DefaultDateFieldUID string       `json:"default_date_field_uid,omitempty"`
 	DefaultDateField    *ColumnNode  `json:"default_date_field,omitempty"`
 	Description         string       `json:"description"`
+	DatastoreID         uint         `json:"datastore_id"`
 }
 
 //Copy will return a copy of the node
@@ -61,6 +64,7 @@ func (t *TableNode) Copy() Node {
 		DefaultDateFieldUID: t.DefaultDateFieldUID,
 		DefaultDateField:    t.DefaultDateField,
 		Description:         t.Description,
+		DatastoreID:         t.DatastoreID,
 	}
 }
 
@@ -92,7 +96,7 @@ func (t *TableNode) Parent() Node {
 //MarshalJSON encodes the node into a serializable json
 func (t *TableNode) MarshalJSON() ([]byte, error) {
 	return json.Marshal(&tableNode{
-		t.UID, string(t.Word), t.PUID, t.Name, t.Children, t.Resolved, "Table", t.DefaultDateFieldUID, t.DefaultDateField, t.Description,
+		t.UID, string(t.Word), t.PUID, t.Name, t.Children, t.Resolved, "Table", t.DefaultDateFieldUID, t.DefaultDateField, t.Description, t.DatastoreID,
 	})
 }
 
@@ -112,6 +116,7 @@ func (t *TableNode) UnmarshalJSON(data []byte) error {
 	t.DefaultDateFieldUID = m.DefaultDateFieldUID
 	t.DefaultDateField = m.DefaultDateField
 	t.Description = m.Description
+	t.DatastoreID = m.DatastoreID
 	return nil
 }
 

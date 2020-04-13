@@ -18,4 +18,24 @@ type Query struct {
 	GroupBy []ColumnNode `json:"group_by,omitempty"`
 	//Filters has the list of filters applied in the query
 	Filters []OperatorNode `json:"filters,omitempty"`
+	//Result has the result of the query
+	Result interface{}
+}
+
+//SQLQuery stores a sql query to be executed
+type SQLQuery struct {
+	//Query is the query string with arguments
+	Query string
+	//Args has the arguments to be passed to the query string
+	Args []interface{}
+}
+
+//ToSQL converts the the query to a sql query
+func (q Query) ToSQL() (*SQLQuery, error) {
+	/*
+	 * First we will add the select fields
+	 * Then we will add the filters
+	 * Then we will ad the group by
+	 */
+	return nil, nil
 }
