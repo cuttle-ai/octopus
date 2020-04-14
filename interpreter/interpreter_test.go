@@ -2,12 +2,14 @@
 // Use of this source code is governed by a Melvin Davis<hi@melvindavis.me>
 // license that can be found in the LICENSE file.
 
-package interpreter
+package interpreter_test
 
 import (
 	"fmt"
 	"testing"
 	"time"
+
+	"github.com/cuttle-ai/octopus/interpreter"
 )
 
 /*
@@ -17,7 +19,7 @@ import (
 func TestInterpret(t *testing.T) {
 	loadTestDICT()
 	time.Sleep(time.Second)
-	toks, err := Tokenize(testUser, []rune("show me the brands of with Swift cars"))
+	toks, err := interpreter.Tokenize(testUser, []rune("show me the brands of with Swift cars"))
 	if err != nil {
 		t.Fatal("error while tokenizing the sentence", err)
 	}
@@ -25,7 +27,7 @@ func TestInterpret(t *testing.T) {
 		t.Error("Expected to have more than 1 tokens found. Go none")
 	}
 
-	qu, err := Interpret(toks)
+	qu, err := interpreter.Interpret(toks)
 
 	fmt.Println(qu)
 }

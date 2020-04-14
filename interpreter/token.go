@@ -4,7 +4,9 @@
 
 package interpreter
 
-import "strconv"
+import (
+	"strconv"
+)
 
 /*
  * This file contains the defnition of tokens in the system

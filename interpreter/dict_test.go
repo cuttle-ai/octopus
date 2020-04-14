@@ -2,49 +2,53 @@
 // Use of this source code is governed by a Melvin Davis<hi@melvindavis.me>
 // license that can be found in the LICENSE file.
 
-package interpreter
+package interpreter_test
 
-import "strings"
+import (
+	"strings"
+
+	"github.com/cuttle-ai/octopus/interpreter"
+)
 
 /*
  * This file contains the test and test utilities for testing dictionary
  */
 
-var testColumn = &ColumnNode{UID: "cars", Word: []rune("cars")}
+var testColumn = &interpreter.ColumnNode{UID: "cars", Word: []rune("cars")}
 
-var testColumn1 = &ColumnNode{UID: "brands", Word: []rune("brand")}
+var testColumn1 = &interpreter.ColumnNode{UID: "brands", Word: []rune("brand")}
 
-var testValue = &ValueNode{UID: "swift", Word: []rune("Swift"), PN: testColumn, PUID: "cars"}
+var testValue = &interpreter.ValueNode{UID: "swift", Word: []rune("Swift"), PN: testColumn, PUID: "cars"}
 
-var testTokens = map[string]Token{
-	"cars": Token{
+var testTokens = map[string]interpreter.Token{
+	"cars": interpreter.Token{
 		Word:  []rune("cars"),
-		Nodes: []Node{testColumn},
+		Nodes: []interpreter.Node{testColumn},
 	},
-	"Swift": Token{
+	"Swift": interpreter.Token{
 		Word:  []rune("Swift"),
-		Nodes: []Node{testValue},
+		Nodes: []interpreter.Node{testValue},
 	},
-	"brands": Token{
+	"brands": interpreter.Token{
 		Word:  []rune("brands"),
-		Nodes: []Node{testColumn1},
+		Nodes: []interpreter.Node{testColumn1},
 	},
 }
 
-var testDICT = DICT{Map: testTokens}
+var testDICT = interpreter.DICT{Map: testTokens}
 
 var testUser = "testuser"
 
 func loadTestDICT() {
-	tTok := map[string]Token{}
+	tTok := map[string]interpreter.Token{}
 	for k, v := range testDICT.Map {
 		tTok[strings.ToLower(k)] = v
 	}
 	testDICT.Map = tTok
-	req := DICTRequest{
+	req := interpreter.DICTRequest{
 		ID:   testUser,
-		Type: DICTAdd,
+		Type: interpreter.DICTAdd,
 		DICT: testDICT,
 	}
-	SendDICTToChannel(DICTInputChannel, req)
+	interpreter.SendDICTToChannel(interpreter.DICTInputChannel, req)
 }

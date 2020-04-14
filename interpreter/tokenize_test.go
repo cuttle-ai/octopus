@@ -2,11 +2,13 @@
 // Use of this source code is governed by a Melvin Davis<hi@melvindavis.me>
 // license that can be found in the LICENSE file.
 
-package interpreter
+package interpreter_test
 
 import (
 	"testing"
 	"time"
+
+	"github.com/cuttle-ai/octopus/interpreter"
 )
 
 /*
@@ -16,7 +18,7 @@ import (
 func TestTokenize(t *testing.T) {
 	loadTestDICT()
 	time.Sleep(time.Second)
-	toks, err := Tokenize(testUser, []rune("show me the brands of with Swift cars"))
+	toks, err := interpreter.Tokenize(testUser, []rune("show me the brands of with Swift cars"))
 	if err != nil {
 		t.Fatal("error while tokenizing the sentence", err)
 	}

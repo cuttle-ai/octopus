@@ -14,7 +14,7 @@ import "encoding/json"
 const EqOperator = "="
 
 //NotEqOperator indicates not equal to operator
-const NotEqOperator = "!="
+const NotEqOperator = "<>"
 
 //GreaterOperator indicates greater than operator
 const GreaterOperator = ">="
@@ -23,10 +23,10 @@ const GreaterOperator = ">="
 const LessOperator = "<="
 
 //ContainsOperator indicates contains operator
-const ContainsOperator = "has"
+const ContainsOperator = "HAS"
 
 //LikeOperator indicates like operator
-const LikeOperator = "%"
+const LikeOperator = "LIKE"
 
 //OperatorNode is the node storing the information about a operator.
 //Filters are set based on this node. It depends upon a column and value/unknown

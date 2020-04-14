@@ -4,6 +4,11 @@
 
 package interpreter
 
+import (
+	"errors"
+	"strings"
+)
+
 /*
  * This file contains the defnition of query of octopus
  */
@@ -11,7 +16,7 @@ package interpreter
 //Query has the interpreted query info
 type Query struct {
 	//Tables has the map of tables whose data is being accessed by the query
-	Tables map[string]TableNode
+	Tables map[string]TableNode `json:"tables,omitempty"`
 	//Select has the list of columns to be selected from the data
 	Select []ColumnNode `json:"select,omitempty"`
 	//GroupBy has the list of columns to be used for group the data
@@ -19,7 +24,7 @@ type Query struct {
 	//Filters has the list of filters applied in the query
 	Filters []OperatorNode `json:"filters,omitempty"`
 	//Result has the result of the query
-	Result interface{}
+	Result interface{} `json:"result,omitempty"`
 }
 
 //SQLQuery stores a sql query to be executed
@@ -33,9 +38,152 @@ type SQLQuery struct {
 //ToSQL converts the the query to a sql query
 func (q Query) ToSQL() (*SQLQuery, error) {
 	/*
-	 * First we will add the select fields
-	 * Then we will add the filters
-	 * Then we will ad the group by
+	 * We will add check for zero table
+	 * If the no of tables is one we will choose the single table query mode
 	 */
-	return nil, nil
+	if len(q.Tables) == 0 {
+		return nil, errors.New("couldn't find any tables")
+	}
+	if len(q.Tables) == 1 {
+		return q.ToSingleTableSQL()
+	}
+	return nil, errors.New("couldn't convert the query to sql as no of tables not suppoerted")
+}
+
+//ToSingleTableSQL will convert the query to sql if the query has only one table
+func (q Query) ToSingleTableSQL() (*SQLQuery, error) {
+	/*
+	 * We will add a table check
+	 * Then we will get the table
+	 * Then we will iterate through the select fields
+	 * If group by fields are there, will add them to be selected
+	 * Then we will add the filters
+	 * Then we will add the group by if any
+	 */
+	//adding the table number check
+	if len(q.Tables) != 1 {
+		return nil, errors.New("couldn't find any table")
+	}
+
+	//getting the table
+	var tableNode TableNode
+	for _, v := range q.Tables {
+		tableNode = v
+	}
+
+	var queryB strings.Builder
+	queryB.WriteString("SELECT ")
+	hasGroupBy := false
+	for _, v := range q.GroupBy {
+		if len(v.Name) > 0 {
+			hasGroupBy = true
+		}
+	}
+	//iterating through the fields to be selected
+	count := 0
+	for _, v := range q.Select {
+		if len(v.Name) == 0 {
+			continue
+		}
+		count++
+		addColumnString(count, v, &queryB, hasGroupBy)
+	}
+
+	//if group fields are there, then add then for selection
+	for _, v := range q.GroupBy {
+		if len(v.Name) == 0 {
+			continue
+		}
+		count++
+		addColumnString(count, v, &queryB, false)
+	}
+
+	//adding the filters
+	queryB.WriteString(" FROM \"" + tableNode.Name + "\"")
+	count = 0
+	if len(q.Filters) > 0 {
+		queryB.WriteString(" WHERE ")
+	}
+	values := []interface{}{}
+	for _, v := range q.Filters {
+		if v.Column == nil || len(v.Column.Name) == 0 || (v.Value == nil && v.Unknown == nil) {
+			continue
+		}
+		if v.Unknown == nil && len(v.Value.Name) == 0 {
+			continue
+		}
+		if v.Value == nil && len(v.Unknown.Word) == 0 {
+			continue
+		}
+		if (v.Column.DataType == DataTypeInt || v.Column.DataType == DataTypeFloat || v.Column.DataType == DataTypeDate) &&
+			(v.Operation != EqOperator && v.Operation != NotEqOperator && v.Operation != GreaterOperator && v.Operation != LessOperator) {
+			continue
+		}
+		if count != 0 {
+			queryB.WriteString(" AND ")
+		}
+		count++
+		columnName := "\"" + v.Column.Name + "\""
+		value := ""
+		if v.Column.DataType == DataTypeString {
+			value += "'"
+		}
+		if (v.Operation == LikeOperator || v.Operation == ContainsOperator) && v.Column.DataType == DataTypeString {
+			value += "%"
+		}
+		if v.Value != nil {
+			value += v.Value.Name
+		} else if v.Unknown != nil {
+			value += string(v.Unknown.Word)
+		}
+		if (v.Operation == LikeOperator || v.Operation == ContainsOperator) && v.Column.DataType == DataTypeString {
+			value += "%"
+		}
+		if v.Column.DataType == DataTypeString {
+			value += "'"
+		}
+
+		queryB.WriteString(columnName + " " + v.Operation + " ?")
+		values = append(values, value)
+	}
+
+	//add the group by if required
+	result := &SQLQuery{Args: values}
+	if !hasGroupBy {
+		result.Query = queryB.String()
+		return result, nil
+	}
+	count = 0
+	queryB.WriteString(" GROUP BY ")
+	for _, v := range q.GroupBy {
+		if len(v.Name) == 0 {
+			continue
+		}
+		if count != 0 {
+			queryB.WriteString(", ")
+		}
+		count++
+		queryB.WriteString("\"" + v.Name + "\"")
+	}
+	result.Query = queryB.String()
+
+	return result, nil
+}
+
+func addColumnString(i int, v ColumnNode, qS *strings.Builder, enforceGroupBy bool) {
+	if i == 0 {
+		qS.WriteString(", ")
+	}
+	columnName := "\"" + v.Name + "\""
+	columnDisplayName := string(v.Word)
+	if len(columnDisplayName) == 0 {
+		columnDisplayName = v.Name
+	}
+	columnDisplayName = "\"" + columnDisplayName + "\""
+	if enforceGroupBy && len(v.AggregationFn) != 0 {
+		columnName = v.AggregationFn + "(" + columnName + ")"
+	} else if enforceGroupBy && len(v.AggregationFn) == 0 {
+		columnName = DefaultAggregationFn + "(" + columnName + ")"
+	}
+	qS.WriteString(columnName + " AS " + columnDisplayName)
 }

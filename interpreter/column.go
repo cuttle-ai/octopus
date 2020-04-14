@@ -19,6 +19,9 @@ const (
 	AggregationFnAvg = "AVG"
 )
 
+//DefaultAggregationFn is the default aggregation function for all the columns
+const DefaultAggregationFn = AggregationFnCount
+
 const (
 	//DataTypeInt denotes integer data type
 	DataTypeInt = "INT"
