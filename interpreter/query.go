@@ -85,8 +85,8 @@ func (q Query) ToSingleTableSQL() (*SQLQuery, error) {
 		if len(v.Name) == 0 {
 			continue
 		}
-		count++
 		addColumnString(count, v, &queryB, hasGroupBy)
+		count++
 	}
 
 	//if group fields are there, then add then for selection
@@ -94,8 +94,8 @@ func (q Query) ToSingleTableSQL() (*SQLQuery, error) {
 		if len(v.Name) == 0 {
 			continue
 		}
-		count++
 		addColumnString(count, v, &queryB, false)
+		count++
 	}
 
 	//adding the filters
@@ -171,19 +171,14 @@ func (q Query) ToSingleTableSQL() (*SQLQuery, error) {
 }
 
 func addColumnString(i int, v ColumnNode, qS *strings.Builder, enforceGroupBy bool) {
-	if i == 0 {
+	if i != 0 {
 		qS.WriteString(", ")
 	}
 	columnName := "\"" + v.Name + "\""
-	columnDisplayName := string(v.Word)
-	if len(columnDisplayName) == 0 {
-		columnDisplayName = v.Name
-	}
-	columnDisplayName = "\"" + columnDisplayName + "\""
 	if enforceGroupBy && len(v.AggregationFn) != 0 {
 		columnName = v.AggregationFn + "(" + columnName + ")"
 	} else if enforceGroupBy && len(v.AggregationFn) == 0 {
 		columnName = DefaultAggregationFn + "(" + columnName + ")"
 	}
-	qS.WriteString(columnName + " AS " + columnDisplayName)
+	qS.WriteString(columnName + " ")
 }
