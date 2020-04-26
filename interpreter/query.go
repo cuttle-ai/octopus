@@ -6,6 +6,7 @@ package interpreter
 
 import (
 	"errors"
+	"fmt"
 	"strings"
 )
 
@@ -62,7 +63,7 @@ func (q Query) ToSingleTableSQL() (*SQLQuery, error) {
 	 */
 	//adding the table number check
 	if len(q.Tables) != 1 {
-		return nil, errors.New("couldn't find any table")
+		return nil, fmt.Errorf("couldn't find any table. Length of the tables to which the query belong to is %d", len(q.Tables))
 	}
 
 	//getting the table
