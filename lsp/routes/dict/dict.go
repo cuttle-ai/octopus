@@ -105,7 +105,7 @@ func loadTestDICT() {
 
 type testDictAggregator struct{}
 
-func (t testDictAggregator) Get(ID string) (interpreter.DICT, error) {
+func (t testDictAggregator) Get(ID string, update bool) (interpreter.DICT, error) {
 	return testDICT, nil
 }
 
