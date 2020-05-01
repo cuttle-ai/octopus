@@ -70,7 +70,7 @@ type DICTRequest struct {
 
 //DICTAggregator is the aggregator to get the dict from a service or database
 type DICTAggregator interface {
-	Get(ID string) (DICT, error)
+	Get(ID string, update bool) (DICT, error)
 }
 
 //DICTInputChannel is the input channel to communicate with the cache
@@ -91,12 +91,12 @@ func SetDefaultDICTAggregator(agg DICTAggregator) {
 	defaultAggregator.m.Unlock()
 }
 
-func getDICT(ID string) (DICT, bool) {
+func getDICT(ID string, update bool) (DICT, bool) {
 	defaultAggregator.m.Lock()
 	if defaultAggregator.agg == nil {
 		return DICT{}, false
 	}
-	d, err := defaultAggregator.agg.Get(ID)
+	d, err := defaultAggregator.agg.Get(ID, update)
 	if err != nil {
 		return DICT{}, false
 	}
@@ -143,7 +143,7 @@ func Dictionary(in chan DICTRequest) {
 		case DICTGet:
 			req.DICT, req.Valid = dict[req.ID]
 			if !req.Valid {
-				req.DICT, req.Valid = getDICT(req.ID)
+				req.DICT, req.Valid = getDICT(req.ID, false)
 			}
 			//we will only give the copies of the dict item to avoid mutation
 			req.DICT = req.DICT.Copy()
@@ -154,7 +154,7 @@ func Dictionary(in chan DICTRequest) {
 		case DICTPreCache:
 			req.DICT, req.Valid = dict[req.ID]
 			if !req.Valid {
-				req.DICT, req.Valid = getDICT(req.ID)
+				req.DICT, req.Valid = getDICT(req.ID, false)
 			}
 			if !req.Valid {
 				break
@@ -198,7 +198,7 @@ func Dictionary(in chan DICTRequest) {
 			break
 		case DICTUpdate:
 			delete(dict, req.ID)
-			d, ok := getDICT(req.ID)
+			d, ok := getDICT(req.ID, true)
 			if !ok {
 				break
 			}
@@ -210,7 +210,7 @@ func Dictionary(in chan DICTRequest) {
 					ID:        req.ID,
 					Type:      TokenizerAdd,
 					Out:       make(chan Request),
-					Tokenizer: Tokenizer{Map: req.DICT.Map},
+					Tokenizer: Tokenizer{Map: d.Map},
 				})
 			break
 		}
