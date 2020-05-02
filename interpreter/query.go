@@ -7,6 +7,7 @@ package interpreter
 import (
 	"errors"
 	"fmt"
+	"strconv"
 	"strings"
 )
 
@@ -102,10 +103,9 @@ func (q Query) ToSingleTableSQL() (*SQLQuery, error) {
 	//adding the filters
 	queryB.WriteString(" FROM \"" + tableNode.Name + "\"")
 	count = 0
-	if len(q.Filters) > 0 {
-		queryB.WriteString(" WHERE ")
-	}
 	values := []interface{}{}
+	done := false
+	index := 0
 	for _, v := range q.Filters {
 		if v.Column == nil || len(v.Column.Name) == 0 || (v.Value == nil && v.Unknown == nil) {
 			continue
@@ -120,6 +120,25 @@ func (q Query) ToSingleTableSQL() (*SQLQuery, error) {
 			(v.Operation != EqOperator && v.Operation != NotEqOperator && v.Operation != GreaterOperator && v.Operation != LessOperator) {
 			continue
 		}
+		var convertedVal interface{}
+		if v.Value != nil {
+			vl, ok := getValue(v.Column.DataType, v.Value.Name)
+			if !ok {
+				continue
+			}
+			convertedVal = vl
+		} else if v.Unknown != nil {
+			vl, ok := getValue(v.Column.DataType, string(v.Unknown.Word))
+			if !ok {
+				continue
+			}
+			convertedVal = vl
+		}
+
+		if len(q.Filters) > 0 && !done {
+			queryB.WriteString(" WHERE ")
+			done = true
+		}
 		if count != 0 {
 			queryB.WriteString(" AND ")
 		}
@@ -132,10 +151,8 @@ func (q Query) ToSingleTableSQL() (*SQLQuery, error) {
 		if (v.Operation == LikeOperator || v.Operation == ContainsOperator) && v.Column.DataType == DataTypeString {
 			value += "%"
 		}
-		if v.Value != nil {
-			value += v.Value.Name
-		} else if v.Unknown != nil {
-			value += string(v.Unknown.Word)
+		if v.Column.DataType == DataTypeString {
+			value += convertedVal.(string)
 		}
 		if (v.Operation == LikeOperator || v.Operation == ContainsOperator) && v.Column.DataType == DataTypeString {
 			value += "%"
@@ -143,9 +160,13 @@ func (q Query) ToSingleTableSQL() (*SQLQuery, error) {
 		if v.Column.DataType == DataTypeString {
 			value += "'"
 		}
-
-		queryB.WriteString(columnName + " " + v.Operation + " ?")
-		values = append(values, value)
+		var finalValue interface{} = value
+		if v.Column.DataType != DataTypeString {
+			finalValue = convertedVal
+		}
+		index++
+		queryB.WriteString(columnName + " " + v.Operation + " $" + strconv.Itoa(index))
+		values = append(values, finalValue)
 	}
 
 	//add the group by if required
@@ -182,4 +203,25 @@ func addColumnString(i int, v ColumnNode, qS *strings.Builder, enforceGroupBy bo
 		columnName = DefaultAggregationFn + "(" + columnName + ")"
 	}
 	qS.WriteString(columnName + " ")
+}
+
+func getValue(dataType string, value string) (interface{}, bool) {
+	if dataType == DataTypeDate || dataType == DataTypeString {
+		return value, true
+	}
+	if dataType == DataTypeInt {
+		val, err := strconv.ParseInt(value, 10, 64)
+		if err != nil {
+			return nil, false
+		}
+		return val, true
+	}
+	if dataType == DataTypeFloat {
+		val, err := strconv.ParseFloat(value, 64)
+		if err != nil {
+			return nil, false
+		}
+		return val, true
+	}
+	return value, false
 }

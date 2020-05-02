@@ -42,43 +42,43 @@ func init() {
 }
 
 var testTokens = map[string]interpreter.Token{
-	"financial-year": interpreter.Token{
+	"financial-year": {
 		Word:  []rune("financial-year"),
 		Nodes: []interpreter.Node{testColumn2},
 	},
-	"sales": interpreter.Token{
+	"sales": {
 		Word:  []rune("sales"),
 		Nodes: []interpreter.Node{testColumn3},
 	},
-	"brand": interpreter.Token{
+	"brand": {
 		Word:  []rune("brand"),
 		Nodes: []interpreter.Node{testColumn1},
 	},
-	"car": interpreter.Token{
+	"car": {
 		Word:  []rune("car"),
 		Nodes: []interpreter.Node{testColumn},
 	},
-	"Swift": interpreter.Token{
+	"Swift": {
 		Word:  []rune("Swift"),
 		Nodes: []interpreter.Node{testValue},
 	},
-	"is": interpreter.Token{
+	"is": {
 		Word:  []rune("is"),
 		Nodes: []interpreter.Node{testOperator},
 	},
-	"not": interpreter.Token{
+	"not": {
 		Word:  []rune("not"),
 		Nodes: []interpreter.Node{notEqOperator},
 	},
-	"before": interpreter.Token{
+	"before": {
 		Word:  []rune("before"),
 		Nodes: []interpreter.Node{lessThanOperator},
 	},
-	"<": interpreter.Token{
+	"<": {
 		Word:  []rune("<"),
 		Nodes: []interpreter.Node{lessThanOperator},
 	},
-	">": interpreter.Token{
+	">": {
 		Word:  []rune(">"),
 		Nodes: []interpreter.Node{greaterThanOperator},
 	},
