@@ -60,6 +60,8 @@ type ColumnNode struct {
 	DataType string
 	//Description is the description about the column
 	Description string
+	//DateFormat is the format of the data if date type
+	DateFormat string
 }
 
 type columnNode struct {
@@ -75,6 +77,7 @@ type columnNode struct {
 	AggregationFn string      `json:"aggregation_fn,omitempty"`
 	DataType      string      `json:"data_type,omitempty"`
 	Description   string      `json:"description"`
+	DateFormat    string      `json:"date_format"`
 }
 
 //Copy will return a copy of the node
@@ -92,6 +95,7 @@ func (c *ColumnNode) Copy() Node {
 		AggregationFn: c.AggregationFn,
 		DataType:      c.DataType,
 		Description:   c.Description,
+		DateFormat:    c.DateFormat,
 	}
 }
 
@@ -123,7 +127,7 @@ func (c *ColumnNode) Parent() Node {
 //MarshalJSON encodes the node into a serializable json
 func (c *ColumnNode) MarshalJSON() ([]byte, error) {
 	return json.Marshal(&columnNode{
-		c.UID, string(c.Word), c.PUID, c.Name, c.Children, c.Resolved, "Column", c.Dimension, c.Measure, c.AggregationFn, c.DataType, c.Description,
+		c.UID, string(c.Word), c.PUID, c.Name, c.Children, c.Resolved, "Column", c.Dimension, c.Measure, c.AggregationFn, c.DataType, c.Description, c.DateFormat,
 	})
 }
 
@@ -145,6 +149,7 @@ func (c *ColumnNode) UnmarshalJSON(data []byte) error {
 	c.AggregationFn = m.AggregationFn
 	c.DataType = m.DataType
 	c.Description = m.Description
+	c.DateFormat = m.DateFormat
 	return nil
 }
 
