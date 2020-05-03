@@ -107,13 +107,16 @@ func (q Query) ToSingleTableSQL() (*SQLQuery, error) {
 	done := false
 	index := 0
 	for _, v := range q.Filters {
-		if v.Column == nil || len(v.Column.Name) == 0 || (v.Value == nil && v.Unknown == nil) {
+		if v.Column == nil || len(v.Column.Name) == 0 || (v.Value == nil && v.Unknown == nil && v.Time == nil) {
 			continue
 		}
-		if v.Unknown == nil && len(v.Value.Name) == 0 {
+		if v.Unknown == nil && v.Time == nil && len(v.Value.Name) == 0 {
 			continue
 		}
-		if v.Value == nil && len(v.Unknown.Word) == 0 {
+		if v.Value == nil && v.Time == nil && len(v.Unknown.Word) == 0 {
+			continue
+		}
+		if v.Value == nil && v.Unknown == nil && (!v.Time.Value.IsValid() || !v.Time.Value.From.IsValid()) {
 			continue
 		}
 		if (v.Column.DataType == DataTypeInt || v.Column.DataType == DataTypeFloat || v.Column.DataType == DataTypeDate) &&
@@ -133,6 +136,11 @@ func (q Query) ToSingleTableSQL() (*SQLQuery, error) {
 				continue
 			}
 			convertedVal = vl
+		} else if v.Time != nil {
+			if v.Column.DataType != DataTypeDate {
+				continue
+			}
+			convertedVal = v.Time.Value.From.Time
 		}
 
 		if len(q.Filters) > 0 && !done {
