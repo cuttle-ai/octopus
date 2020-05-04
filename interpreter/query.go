@@ -206,9 +206,9 @@ func addColumnString(i int, v ColumnNode, qS *strings.Builder, enforceGroupBy bo
 	}
 	columnName := "\"" + v.Name + "\""
 	if enforceGroupBy && len(v.AggregationFn) != 0 {
-		columnName = v.AggregationFn + "(" + columnName + ")"
+		columnName = v.AggregationFn + "(" + columnName + ") AS " + columnName
 	} else if enforceGroupBy && len(v.AggregationFn) == 0 {
-		columnName = DefaultAggregationFn + "(" + columnName + ")"
+		columnName = DefaultAggregationFn + "(" + columnName + ") AS " + columnName
 	}
 	qS.WriteString(columnName + " ")
 }
