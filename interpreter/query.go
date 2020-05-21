@@ -26,7 +26,7 @@ type Query struct {
 	//Filters has the list of filters applied in the query
 	Filters []OperatorNode `json:"filters,omitempty"`
 	//Result has the result of the query
-	Result interface{} `json:"result,omitempty"`
+	Result []map[string]interface{} `json:"result,omitempty"`
 }
 
 //SQLQuery stores a sql query to be executed
